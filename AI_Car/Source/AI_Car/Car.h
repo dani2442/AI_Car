@@ -41,9 +41,14 @@ public:
 		int StickNumber = 4;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
-		float amplitude = 90;
+		float amplitude = 90.f;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
+		float VelocityX = 20.f;
+
 	FCollisionQueryParams CollisionParams;
+
+	//FVector ActorLocation;
 
 	//NeuralNetwork nn;
 	//TArray<double> Input;

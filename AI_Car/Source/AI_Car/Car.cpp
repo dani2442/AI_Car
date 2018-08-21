@@ -17,13 +17,15 @@ ACar::ACar()
 
 	OurVisibleActor->SetSimulatePhysics(true);
 	CollisionParams.AddIgnoredActor(this);
+
+	//ActorLocation = GetActorLocation();
 }
 
 // Called when the game starts or when spawned
 void ACar::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -54,6 +56,11 @@ void ACar::Tick(float DeltaTime)
 		}
 		actorRot.Yaw += rotation;
 	}
+	//TArray<double> result=nn.forward(Input);
+	//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("right: %f || left: %f"), result[0],result[1]));
+	
+	SetActorLocation(GetActorLocation() + FVector(DeltaTime*VelocityX, 0.f, 0.f));
+	//SetActorRelativeRotation(FRotator(0.f, 2.f*(result[0] - result[1]), 0.f));
 }
 
 // Called to bind functionality to input
