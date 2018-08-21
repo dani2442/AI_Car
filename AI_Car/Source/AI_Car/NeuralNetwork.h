@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Engine.h"
 #include "CoreMinimal.h"
 
 /**
@@ -14,8 +15,8 @@ public:
 	NeuralNetwork(TArray<int> topology);
 	~NeuralNetwork();
 
-	TArray<double> forward(TArray<double> data);
+	TArray<float> forward(TArray<float> data);
 
 private:
-	TArray<TArray<TArray<double>>> NN;
+	TArray<TArray<TArray<float>>> NN;
 };

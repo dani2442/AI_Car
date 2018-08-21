@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Containers/Array.h"
-//#include "NeuralNetwork.h"
+#include "NeuralNetwork.h"
 #include "Engine.h"
 #include "CollisionQueryParams.h"
 #include "DrawDebugHelpers.h"
@@ -46,11 +46,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		float VelocityX = 20.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
+		float MaxDistance = 2000.f;
+
 	FCollisionQueryParams CollisionParams;
 
 	//FVector ActorLocation;
 
-	//NeuralNetwork nn;
-	//TArray<double> Input;
+	NeuralNetwork nn;
 	
+private:
+	float proportion;
 };

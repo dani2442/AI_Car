@@ -8,12 +8,12 @@ NeuralNetwork::NeuralNetwork()
 
 NeuralNetwork::NeuralNetwork(TArray<int> topology)
 {
-	for (int i = 0; i < topology.Num()-1; ++i) {
-		TArray<TArray<double>> layer;
-		for (int j = 0; j < topology[i]; ++j) {
-			TArray<double> sublayer;
-			for (int k = 0; j < topology[i + 1]; ++k) {
-				sublayer.Add(FMath::Rand());
+	for (int i = 0; i < topology.Num()-1; i++) {
+		TArray<TArray<float>> layer;
+		for (int j = 0; j < topology[i]; j++) {
+			TArray<float> sublayer;
+			for (int k = 0; k < topology[i + 1]; k++) {
+				sublayer.Add(FMath::FRand());
 			}
 			layer.Add(sublayer);
 		}
@@ -25,14 +25,16 @@ NeuralNetwork::~NeuralNetwork()
 {
 }
 
-TArray<double> NeuralNetwork::forward(TArray<double> data)
+TArray<float> NeuralNetwork::forward(TArray<float> data)
 {
 	for (int i = 0; i < NN.Num(); ++i) {
-		TArray<double> output;
+		TArray<float> output;
 		for (int j = 0; j < NN[i].Num(); ++j) {
 			output.Add(0);
 			for (int k = 0; k < NN[i][0].Num(); ++k) {
-				output[j] += data[j] * NN[i][j][k];
+				float myresult = data[j] * NN[i][j][k];
+				//GEngine->AddOnScreenDebugMessage(-1, 0.001, FColor::Blue, FString::Printf(TEXT("result:%f"),  data[j]));
+				output[j] += myresult;
 			}
 		}
 		data = output;
