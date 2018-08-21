@@ -54,20 +54,21 @@ void ACar::Tick(float DeltaTime)
 				float distance = (OutHit.ImpactPoint - start).Size()*proportion;
 				Input.Add(distance);
 				GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
-				GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Actor: %s"), *OutHit.GetActor()->GetName()));
+				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Actor: %s"), *OutHit.GetActor()->GetName()));
 			}
 		}
 		else {
 			Input.Add(2000*proportion);
 		}
 		actorRot.Yaw += rotation;
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("result:%f"),  Input[i]));
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("result: %f"),  Input[i]));
 	}
 	TArray<float> result=nn.forward(Input);
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("right: %f || left: %f"), result[0],result[1]));
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0] - result[1]));
 	
-	SetActorLocation(GetActorLocation() + FVector(DeltaTime*VelocityX, 0.f, 0.f));
-	SetActorRotation(GetActorRotation() + FRotator(0.f, 0.2f*(result[0] - result[1]), 0.f));
+	
+	SetActorLocation(GetActorLocation() +FVector(DeltaTime*VelocityX, 1.f, 1.f)* GetActorForwardVector() );
+	SetActorRotation(GetActorRotation() + FRotator(0.f, RotationVelocityPawn*DeltaTime*(result[0] - result[1]), 0.f));
 }
 
 // Called to bind functionality to input

@@ -44,7 +44,10 @@ public:
 		float amplitude = 90.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
-		float VelocityX = 20.f;
+		float VelocityX = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
+		float RotationVelocityPawn = 20.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		float MaxDistance = 2000.f;

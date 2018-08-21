@@ -32,9 +32,7 @@ TArray<float> NeuralNetwork::forward(TArray<float> data)
 		for (int j = 0; j < NN[i].Num(); ++j) {
 			output.Add(0);
 			for (int k = 0; k < NN[i][0].Num(); ++k) {
-				float myresult = data[j] * NN[i][j][k];
-				//GEngine->AddOnScreenDebugMessage(-1, 0.001, FColor::Blue, FString::Printf(TEXT("result:%f"),  data[j]));
-				output[j] += myresult;
+				output[j] += data[j] * NN[i][j][k];
 			}
 		}
 		data = output;
