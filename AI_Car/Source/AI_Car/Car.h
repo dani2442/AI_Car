@@ -47,14 +47,15 @@ public:
 		float VelocityX = 100.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
-		float RotationVelocityPawn = 20.f;
+		float RotationVelocityPawn = 60.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		float MaxDistance = 2000.f;
 
 	FCollisionQueryParams CollisionParams;
 
-	//FVector ActorLocation;
+	UFUNCTION()
+		void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	NeuralNetwork nn;
 	

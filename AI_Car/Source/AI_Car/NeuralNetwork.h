@@ -19,4 +19,6 @@ public:
 
 private:
 	TArray<TArray<TArray<float>>> NN;
+
+	float Sigmoid(float x) { return 1 / (1 + FGenericPlatformMath::Exp(-x)); }
 };

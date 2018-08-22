@@ -34,6 +34,7 @@ TArray<float> NeuralNetwork::forward(TArray<float> data)
 			for (int k = 0; k < NN[i][0].Num(); ++k) {
 				output[j] += data[j] * NN[i][j][k];
 			}
+			output[j] = Sigmoid(output[j]);
 		}
 		data = output;
 	}

@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Car.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "Components/BoxComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 // Sets default values
 ACar::ACar()
@@ -14,6 +16,10 @@ ACar::ACar()
 	RootComponent = OurVisibleActor;
 
 	BoxComponent->SetupAttachment(OurVisibleActor);
+	BoxComponent->SetNotifyRigidBodyCollision(true);
+	BoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
+	BoxComponent->OnComponentHit.AddDynamic(this, &ACar::OnCompHit);
+	BoxComponent->SetSimulatePhysics(false);
 
 	OurVisibleActor->SetSimulatePhysics(true);
 	CollisionParams.AddIgnoredActor(this);
@@ -76,5 +82,14 @@ void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ACar::OnCompHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
+{
+	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL)) {
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("I Just hit:%s"), *OtherActor->GetName()));
+		}
+	}
 }
 
