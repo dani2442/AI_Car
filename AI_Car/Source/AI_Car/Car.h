@@ -58,7 +58,8 @@ public:
 		void OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	NeuralNetwork nn;
-	
+	bool hit = false;
+
 private:
 	float proportion;
 };

@@ -59,18 +59,18 @@ void ACar::Tick(float DeltaTime)
 			if (GEngine) {
 				float distance = (OutHit.ImpactPoint - start).Size()*proportion;
 				Input.Add(distance);
-				GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
+				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
 				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Actor: %s"), *OutHit.GetActor()->GetName()));
 			}
 		}
 		else {
-			Input.Add(2000*proportion);
+			Input.Add(MaxDistance*proportion);
 		}
 		actorRot.Yaw += rotation;
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("result: %f"),  Input[i]));
 	}
 	TArray<float> result=nn.forward(Input);
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0] - result[1]));
+	//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0] - result[1]));
 	
 	
 	SetActorLocation(GetActorLocation() +FVector(DeltaTime*VelocityX, 1.f, 1.f)* GetActorForwardVector() );
@@ -89,6 +89,7 @@ void ACar::OnCompHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimit
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL)) {
 		if (GEngine) {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("I Just hit:%s"), *OtherActor->GetName()));
+			hit = true;
 		}
 	}
 }
