@@ -60,6 +60,8 @@ public:
 	NeuralNetwork nn;
 	bool hit = false;
 
+	void Change();
+
 private:
 	float proportion;
 };

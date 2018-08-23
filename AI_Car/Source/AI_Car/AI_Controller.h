@@ -33,4 +33,8 @@ public:
 		TSubclassOf<class ACar> OurSpawningObject;
 
 	TArray<ACar*> Cars;
+
+	void Initialize(bool learn=false);
+
+	void Learning();
 };
