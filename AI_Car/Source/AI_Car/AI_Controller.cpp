@@ -17,8 +17,8 @@ void AAI_Controller::BeginPlay()
 	Super::BeginPlay();
 
 	this->Initialize();
-	FString path("dani.dp");
-	Cars[0]->nn.Write(path);
+	FString RelativePath = FPaths::GameContentDir();
+	Cars[0]->nn.Write(RelativePath+"NNdata/dani.json");
 }
 
 // Called every frame

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Json.h"
+#include "Engine.h"
 #include "Templates/SharedPointer.h"
 #include "Misc/FileHelper.h"
 #include "Serialization/JsonSerializer.h"

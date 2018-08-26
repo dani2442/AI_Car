@@ -61,12 +61,28 @@ void NeuralNetwork::Create(TArray<int> topology)
 void NeuralNetwork::Write(FString path)
 {
 	
-	TSharedPtr<FJsonObject,ESPMode::ThreadSafe> SaveData = MakeShareable(new FJsonObject);
+	TSharedPtr<FJsonObject> SaveData = MakeShareable(new FJsonObject);
 
-	// SaveData->SetStringField("name", "value");
-	// FString SaveGameStringData;
+	 TArray< TSharedPtr<FJsonValue> > ValueArray;
 
-	 //TSharedRef< TJsonWriter<> > JsonWriter = TJsonWriterFactory<>::Create(&SaveGameStringData);
-    // FJsonSerializer::Serialize(SaveData.ToSharedRef(), JsonWriter);
-    // FFileHelper::SaveStringToFile(*SaveGameStringData, *path);
+	 TArray< TSharedPtr<FJsonValue> > ValueArray2;
+ 
+	 // Create two values and add them to the array
+	 TSharedPtr<FJsonValue> Value1 = MakeShareable(new FJsonValueNumber(4.34));    
+	 ValueArray2.Add(Value1);    
+	 TSharedPtr<FJsonValue> Value2 = MakeShareable(new FJsonValueNumber(4.34));    
+	 ValueArray2.Add(Value2);
+
+	 ValueArray.Add(ValueArray2);
+	 ValueArray.Add(ValueArray2);
+ 
+ // Add the array to the Json object
+ SaveData->SetArrayField("NN", ValueArray);
+
+	FString SaveGameStringData;
+
+	TSharedRef< TJsonWriter<> > JsonWriter = TJsonWriterFactory<>::Create(&SaveGameStringData);
+	FJsonSerializer::Serialize(SaveData.ToSharedRef(), JsonWriter);
+
+	FFileHelper::SaveStringToFile(*SaveGameStringData, *path);
 }
