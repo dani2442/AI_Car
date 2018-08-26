@@ -2,7 +2,10 @@
 
 #pragma once
 
-#include "Engine.h"
+#include "Templates/SharedPointer.h"
+#include "Misc/FileHelper.h"
+#include "Serialization/JsonSerializer.h"
+#include "Dom/JsonObject.h"
 #include "CoreMinimal.h"
 
 /**
@@ -12,10 +15,16 @@ class AI_CAR_API NeuralNetwork
 {
 public:
 	NeuralNetwork();
+	NeuralNetwork(FString);
 	NeuralNetwork(TArray<int> topology);
 	~NeuralNetwork();
 
 	TArray<float> forward(TArray<float> data);
+
+	void Load(FString);
+	void Create(TArray<int> topology);
+
+	void Write(FString path);
 
 	TArray<TArray<TArray<float>>> NN;
 

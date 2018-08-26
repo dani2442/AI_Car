@@ -31,7 +31,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Car")
 		UStaticMeshComponent* OurVisibleActor;
 
 	UPROPERTY(EditAnywhere)
@@ -39,6 +39,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		int StickNumber = 4;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
+		bool best = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		float amplitude = 90.f;

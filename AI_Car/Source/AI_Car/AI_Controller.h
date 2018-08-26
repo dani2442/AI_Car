@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Engine.h"
+#include "NeuralNetwork.h"
 #include "Car.h"
 #include "Containers/Array.h"
 #include "CoreMinimal.h"
@@ -26,6 +27,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void Initialize(bool learn=false);
+	void Learning();
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Controller")
 		int population = 30;
 
@@ -34,7 +39,5 @@ public:
 
 	TArray<ACar*> Cars;
 
-	void Initialize(bool learn=false);
-
-	void Learning();
+	NeuralNetwork best;
 };

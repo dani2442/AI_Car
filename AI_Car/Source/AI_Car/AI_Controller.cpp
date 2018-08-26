@@ -15,19 +15,10 @@ AAI_Controller::AAI_Controller()
 void AAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
-	/*
-	for (int i = 0; i < population; i++) {
-		FVector Location = GetActorLocation();
-		FRotator Rotation(0.f, 0.0f, 0.0f);
-		FActorSpawnParameters SpawnInfo;
-		SpawnInfo.Owner = this;
-		SpawnInfo.Instigator = Instigator;
 
-		Cars.Add(GetWorld()->SpawnActor<ACar>(Location, Rotation, SpawnInfo));
-
-	}
-	*/
 	this->Initialize();
+	FString path("dani.dp");
+	Cars[0]->nn.Write(path);
 }
 
 // Called every frame
@@ -38,11 +29,19 @@ void AAI_Controller::Tick(float DeltaTime)
 	for (int i = 0; i < Cars.Num() ; i++) {
 		if (Cars[i]->hit) {
 			if (Cars.Num() == 1) {
+				Cars[i]->best = true;
+				best = Cars[i]->nn;
+				Cars[i]->Destroy();
+				Cars.RemoveAt(i);
 				Initialize(true);
+				//break;
 			}
-			Cars[i]->K2_DestroyActor();
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("number:%i"), Cars.Num()));
-			Cars.RemoveAt(i);
+			else {
+
+				Cars[i]->Destroy();
+				Cars.RemoveAt(i);
+				//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("number:%i"), Cars.Num()));
+			}
 		}
 	}
 	
@@ -57,24 +56,26 @@ void AAI_Controller::Initialize(bool learn)
 	SpawnInfo.Owner = this;
 	SpawnInfo.Instigator = Instigator;
 	int newobjects = Cars.Num();
-	for (int i = newobjects; i < population; i++) {
-		Cars.Add(GetWorld()->SpawnActorDeferred<ACar>(ACar::StaticClass(),FTransform::Identity,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
+	
+	for (int i = 0; i < population; i++) {
+		Cars.Add(GetWorld()->SpawnActorDeferred<ACar>(OurSpawningObject,FTransform::Identity,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
 	}
 
 	if (learn) {
 		Learning();
 	}
 
-	for (int i = newobjects; i < population; i++) {
+	for (int i = 0; i < population; i++) {
 		Cars[i]->FinishSpawning(transform);
 	}
-	Cars[0]->SetActorTransform(transform);
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("first number:%f"), best.NN[0][0][0]));
 }
 
 void AAI_Controller::Learning()
 {
+	Cars[0]->nn = best;
 	for (int i = 1; i < population;i++) { // TODO first part
-		Cars[i]->nn = Cars[0]->nn;
+		Cars[i]->nn = best;
 		Cars[i]->Change();
 	}
 }

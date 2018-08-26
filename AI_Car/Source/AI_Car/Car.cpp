@@ -15,9 +15,6 @@ ACar::ACar()
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Our collision"));
 	RootComponent = OurVisibleActor;
 
-	
-
-
 	BoxComponent->SetupAttachment(OurVisibleActor);
 	BoxComponent->SetNotifyRigidBodyCollision(true);
 	BoxComponent->BodyInstance.SetCollisionProfileName("Car");
@@ -59,7 +56,7 @@ void ACar::Tick(float DeltaTime)
 	FRotator actorRot(this->GetActorRotation());
 	actorRot.Yaw -= amplitude * 0.5;
 	
-	float rotation = amplitude / (StickNumber-1);
+	float stickrotation = amplitude / (StickNumber-1);
 	for (int i = 0; i < StickNumber; ++i) {
 		FVector end(actorRot.Vector() * 2000 + start);
 		DrawDebugLine(GetWorld(), start, end, FColor::Green, false, DeltaTime+0.01, 0, 1);
@@ -75,16 +72,15 @@ void ACar::Tick(float DeltaTime)
 		else {
 			Input.Add(MaxDistance*proportion);
 		}
-		actorRot.Yaw += rotation;
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("result: %f"),  Input[i]));
+		actorRot.Yaw += stickrotation;
+		//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("result: %f"),  Input[i]));
 	}
 	TArray<float> result=nn.forward(Input);
 	//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0] - result[1]));
 	
+	SetActorRotation(FRotator(0.f,GetActorRotation().Yaw + RotationVelocityPawn * DeltaTime*(result[0] - result[1]),0.f));
+	SetActorLocation(GetActorForwardVector()* (DeltaTime*VelocityX) + GetActorLocation());
 	
-	SetActorLocation(GetActorLocation() +FVector(DeltaTime*VelocityX, 1.f, 1.f)* GetActorForwardVector() );
-	SetActorRotation(GetActorRotation() + FRotator(0.f, RotationVelocityPawn*DeltaTime*(result[0] - result[1]), 0.f));
-
 }
 
 // Called to bind functionality to input
@@ -98,7 +94,7 @@ void ACar::OnCompHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimit
 {
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL)) {
 		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1,1.f, FColor::Green, FString::Printf(TEXT("I Just hit:%s"), *OtherActor->GetName()));
+			//GEngine->AddOnScreenDebugMessage(-1,1.f, FColor::Green, FString::Printf(TEXT("I Just hit:%s"), *OtherActor->GetName()));
 			//this->Destroy();
 			hit = true;
 		}
@@ -109,7 +105,7 @@ void ACar::Change() {
 	for (auto& a : nn.NN) {
 		for (auto&b : a) {
 			for (auto&c : b) {
-				c += (FMath::FRand() * 2 - 1)*0.2;
+				c += (FMath::FRand() * 2 - 1)*0.4;
 			}
 		}
 	}
