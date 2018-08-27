@@ -47,7 +47,7 @@ void NeuralNetwork::Load(FString path)
 
 	FJsonObjectConverter::JsonObjectStringToUStruct<FNN>(result, &JsonData, 0, 0);
 	
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *result);
+	//UE_LOG(LogTemp, Warning, TEXT("%s"), *result);
 
 	for (FNNLayer& layer : JsonData.NN) {
 		TArray<TArray<float>> nnlayer;

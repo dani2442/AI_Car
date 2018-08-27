@@ -18,9 +18,7 @@ void AAI_Controller::BeginPlay()
 	Super::BeginPlay();
 
 	this->Initialize();
-	FString RelativePath = FPaths::GameContentDir();
 	Cars[0]->nn.Load(RelativePath+"NNdata/dani.json");
-	Cars[0]->nn.Write(RelativePath+"NNdata/dani.json");
 }
 
 
@@ -34,6 +32,7 @@ void AAI_Controller::Tick(float DeltaTime)
 		if (Cars[i]->hit) {
 			if (Cars.Num() == 1) {
 				Cars[i]->best = true;
+				Cars[i]->nn.Write(RelativePath+"NNdata/dani.json");
 				best = Cars[i]->nn;
 				Cars[i]->Destroy();
 				Cars.RemoveAt(i);

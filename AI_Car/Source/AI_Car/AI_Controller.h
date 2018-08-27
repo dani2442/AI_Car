@@ -40,4 +40,6 @@ public:
 	TArray<ACar*> Cars;
 
 	NeuralNetwork best;
+private:
+	FString RelativePath = FPaths::GameContentDir();
 };
