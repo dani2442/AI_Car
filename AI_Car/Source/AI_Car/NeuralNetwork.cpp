@@ -38,9 +38,28 @@ TArray<float> NeuralNetwork::forward(TArray<float> data)
 	return data;
 }
 
-void NeuralNetwork::Load(FString)
+void NeuralNetwork::Load(FString path)
 {
+	NN.Empty();
+	FString result;
+	FFileHelper::LoadFileToString(result,*path);
+	FNN JsonData;
 
+	FJsonObjectConverter::JsonObjectStringToUStruct<FNN>(result, &JsonData, 0, 0);
+	
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *result);
+
+	for (FNNLayer& layer : JsonData.NN) {
+		TArray<TArray<float>> nnlayer;
+		for (int i = 0; i < layer.n_neurons_pre; i++) {
+			TArray<float> sublayer;
+			for (int j = 0; j < layer.n_neurons_pos; j++) {
+				sublayer.Add(layer.weight[j + i * layer.n_neurons_pos]);
+			}
+			nnlayer.Add(sublayer);
+		}
+		NN.Add(nnlayer);
+	}
 }
 
 void NeuralNetwork::Create(TArray<int> topology)
@@ -63,21 +82,27 @@ void NeuralNetwork::Write(FString path)
 	
 	TSharedPtr<FJsonObject> SaveData = MakeShareable(new FJsonObject);
 
-	 TArray< TSharedPtr<FJsonValue> > ValueArray;
+	TArray< TSharedPtr<FJsonValue> > ObjArray;
 
-	 TArray< TSharedPtr<FJsonValue> > ValueArray2;
- 
-	 // Create two values and add them to the array
-	 TSharedPtr<FJsonValue> Value1 = MakeShareable(new FJsonValueNumber(4.34));    
-	 ValueArray2.Add(Value1);    
-	 TSharedPtr<FJsonValue> Value2 = MakeShareable(new FJsonValueNumber(4.34));    
-	 ValueArray2.Add(Value2);
+	for (auto& a : NN) {
+		TSharedPtr< FJsonObject > JsonObj = MakeShareable(new FJsonObject);
+		JsonObj->SetNumberField("n_neurons_pre",a.Num());
+		JsonObj->SetNumberField("n_neurons_pos",a[0].Num());
 
-	 ValueArray.Add(ValueArray2);
-	 ValueArray.Add(ValueArray2);
- 
- // Add the array to the Json object
- SaveData->SetArrayField("NN", ValueArray);
+		TArray< TSharedPtr<FJsonValue> > ValueArray;
+		for (auto&b : a) {
+			for (auto&c : b) {
+				TSharedPtr<FJsonValue> Value1 = MakeShareable(new FJsonValueNumber(c));  
+				ValueArray.Add(Value1); 
+			}
+		}
+		JsonObj->SetArrayField("weight",ValueArray);
+		TSharedRef< FJsonValueObject > JsonValue = MakeShareable( new FJsonValueObject( JsonObj) );
+		ObjArray.Add(JsonValue);
+	}
+
+	SaveData->SetArrayField("NN", ObjArray);
+
 
 	FString SaveGameStringData;
 

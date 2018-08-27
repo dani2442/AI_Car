@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+
 #include "AI_Controller.h"
 
 
@@ -18,8 +19,11 @@ void AAI_Controller::BeginPlay()
 
 	this->Initialize();
 	FString RelativePath = FPaths::GameContentDir();
+	Cars[0]->nn.Load(RelativePath+"NNdata/dani.json");
 	Cars[0]->nn.Write(RelativePath+"NNdata/dani.json");
 }
+
+
 
 // Called every frame
 void AAI_Controller::Tick(float DeltaTime)

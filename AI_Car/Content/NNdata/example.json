@@ -1,0 +1,11 @@
+{
+    "nested" : {
+        "id" : "654asdf",
+        "name" : "The Name"
+    },
+    "foo" : "foobar",
+    "bar_arr" : [
+        { "barfoo" : "asdf" },
+        { "barfoo" : "qwer" }
+    ]
+}

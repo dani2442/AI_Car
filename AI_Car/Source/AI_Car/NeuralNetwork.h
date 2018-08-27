@@ -3,11 +3,13 @@
 #pragma once
 
 #include "Json.h"
+#include "JsonVariables.h"
 #include "Engine.h"
 #include "Templates/SharedPointer.h"
 #include "Misc/FileHelper.h"
 #include "Serialization/JsonSerializer.h"
 #include "Dom/JsonObject.h"
+#include "JsonUtilities/Public/JsonObjectConverter.h"
 #include "CoreMinimal.h"
 
 /**
@@ -31,7 +33,7 @@ public:
 	TArray<TArray<TArray<float>>> NN;
 
 private:
-	
 
 	float Sigmoid(float x) { return 1 / (1 + FGenericPlatformMath::Exp(-x)); }
 };
+
