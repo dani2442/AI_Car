@@ -13,9 +13,13 @@ ACar::ACar()
 
 	OurVisibleActor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Our mesh"));
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Our collision"));
-	RootComponent = OurVisibleActor;
+	Component = CreateDefaultSubobject<UBoxComponent>(TEXT("Our box"));
+	RootComponent = Component;
 
-	BoxComponent->SetupAttachment(OurVisibleActor);
+	OurVisibleActor->SetupAttachment(RootComponent);
+	//Component->SetupAttachment(RootComponent);
+	BoxComponent->SetupAttachment(RootComponent);
+
 	BoxComponent->SetNotifyRigidBodyCollision(true);
 	BoxComponent->BodyInstance.SetCollisionProfileName("Car");
 	BoxComponent->OnComponentHit.AddDynamic(this, &ACar::OnCompHit);
@@ -24,11 +28,12 @@ ACar::ACar()
 
 	CollisionParams.AddIgnoredActor(this);
 
-	OurVisibleActor->SetSimulatePhysics(true);
-	OurVisibleActor->BodyInstance.SetCollisionProfileName("Car");
-	auto MeshAsset= ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
-	UStaticMesh* Asset = MeshAsset.Object;
-	OurVisibleActor->SetStaticMesh(Asset);
+	Component->SetSimulatePhysics(true);
+	Component->BodyInstance.SetCollisionProfileName("Car");
+	OurVisibleActor->BodyInstance.SetCollisionProfileName("NoCollision");
+	//auto MeshAsset= ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
+	//UStaticMesh* Asset = MeshAsset.Object;
+	//OurVisibleActor->SetStaticMesh(Asset);
 
 	TArray<int> topology = { StickNumber,3,2 };
 	nn = NeuralNetwork(topology);
@@ -65,7 +70,7 @@ void ACar::Tick(float DeltaTime)
 			if (GEngine) {
 				float distance = (OutHit.ImpactPoint - start).Size()*proportion;
 				Input.Add(distance);
-				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
+				GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
 				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Actor: %s"), *OutHit.GetActor()->GetName()));
 			}
 		}
@@ -94,7 +99,7 @@ void ACar::OnCompHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimit
 {
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL)) {
 		if (GEngine) {
-			//GEngine->AddOnScreenDebugMessage(-1,1.f, FColor::Green, FString::Printf(TEXT("I Just hit:%s"), *OtherActor->GetName()));
+			GEngine->AddOnScreenDebugMessage(-1,1.f, FColor::Green, FString::Printf(TEXT("I Just hit:%s"), *OtherActor->GetName()));
 			//this->Destroy();
 			hit = true;
 		}

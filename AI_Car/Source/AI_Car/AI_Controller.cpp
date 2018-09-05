@@ -69,6 +69,9 @@ void AAI_Controller::Initialize(bool learn)
 	}
 
 	for (int i = 0; i < population; i++) {
+		if (i >= show_cars) {
+			Cars[i]->OurVisibleActor->SetVisibility(false);
+		}
 		Cars[i]->FinishSpawning(transform);
 	}
 	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("first number:%f"), best.NN[0][0][0]));

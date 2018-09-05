@@ -30,6 +30,8 @@ public:
 	void Initialize(bool learn=false);
 	void Learning();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Controller")
+		int show_cars = 6;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Controller")
 		int population = 30;

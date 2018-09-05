@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "AI_Controller.h"
 #include "Runtime/Engine/Classes/Engine/TargetPoint.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -26,5 +27,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyCategory", Meta = (MakeEditWidget = true)) 
 		TArray<FVector> Targetpoints;
+
+	UPROPERTY(EditAnywhere, Category = "Our Spawning Object")
+		TSubclassOf<class AAI_Controller> OurController;
 
 };

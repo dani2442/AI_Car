@@ -31,11 +31,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Car")
+	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* OurVisibleActor;
 
 	UPROPERTY(EditAnywhere)
 		UBoxComponent* BoxComponent;
+
+	UPROPERTY(EditAnywhere)
+		UBoxComponent* Component;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		int StickNumber = 4;
