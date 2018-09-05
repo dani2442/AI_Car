@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "AI_Controller.h"
+#include "Classes/Components/SplineComponent.h"
 #include "Runtime/Engine/Classes/Engine/TargetPoint.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -25,10 +25,16 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyCategory", Meta = (MakeEditWidget = true)) 
-		TArray<FVector> Targetpoints;
 
-	UPROPERTY(EditAnywhere, Category = "Our Spawning Object")
-		TSubclassOf<class AAI_Controller> OurController;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "MyCategory",meta = (AllowPrivateAccess = "true"))
+         USplineComponent* PathSpline;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "MyCategory")
+		UStaticMeshComponent* OurTrack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyCategory")
+		bool FinishOnStart = true;
+
+	
 
 };

@@ -8,8 +8,9 @@ ATrack::ATrack()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	OurTrack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Our mesh"));
+	PathSpline = CreateDefaultSubobject<USplineComponent>(TEXT("Path"));
 	
-
 }
 
 // Called when the game starts or when spawned

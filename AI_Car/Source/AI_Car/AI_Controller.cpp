@@ -17,8 +17,12 @@ void AAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
 
-	this->Initialize();
+	InitLine();
+
+	this->Initialize(); // Spawn objects
 	Cars[0]->nn.Load(RelativePath+"NNdata/dani.json");
+
+
 }
 
 
@@ -28,25 +32,7 @@ void AAI_Controller::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	for (int i = 0; i < Cars.Num() ; i++) {
-		if (Cars[i]->hit) {
-			if (Cars.Num() == 1) {
-				Cars[i]->best = true;
-				Cars[i]->nn.Write(RelativePath+"NNdata/dani.json");
-				best = Cars[i]->nn;
-				Cars[i]->Destroy();
-				Cars.RemoveAt(i);
-				Initialize(true);
-				//break;
-			}
-			else {
-
-				Cars[i]->Destroy();
-				Cars.RemoveAt(i);
-				//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("number:%i"), Cars.Num()));
-			}
-		}
-	}
+	CheckHit();
 	
 }
 
@@ -87,3 +73,62 @@ void AAI_Controller::Learning()
 }
 
 
+void AAI_Controller::CheckHit() {
+	for (int i = 0; i < Cars.Num() ; i++) {
+		if (Cars[i]->hit) {
+			if (Cars.Num() == 1) {
+				Cars[i]->best = true;
+				Cars[i]->nn.Write(RelativePath+"NNdata/dani.json");
+				best = Cars[i]->nn;
+				Cars[i]->Destroy();
+				Cars.RemoveAt(i);
+				Initialize(true);
+				//break;
+			}
+			else {
+
+				Cars[i]->Destroy();
+				Cars.RemoveAt(i);
+				//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("number:%i"), Cars.Num()));
+			}
+		}
+	}
+}
+
+void AAI_Controller::InitLine()
+{
+	this->n_target = OurTrack->PathSpline->GetNumberOfSplinePoints();
+
+	FVector carloc = GetActorLocation();
+	FVector target[2];
+	float distance = 0.f, distance2 = 1000000000.f,newdistance;
+	int point=0;
+	bool state = true;
+
+	target[!state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(n_target);
+	for (int i = 0; i < n_target; i++) {
+		target[state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(i);
+
+		newdistance = pow(carloc.X - target[state].X, 2) + pow(carloc.Y - target[state].Y, 2);
+		if (newdistance < distance2) {
+			distance2 = newdistance;
+			point = i;
+		}
+
+		distance += sqrt(pow(target[0].X - target[1].X, 2) + pow(target[0].Y - target[1].Y, 2));
+		state = !state;
+	}
+	this->current_target = point;
+	this->circuit_ditance = distance;
+
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("distance total:%f"), distance));
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("nearest point:%i"), point));
+	
+}
+
+void AAI_Controller::PercentageRace()
+{
+	for (int i = 0; i < Cars.Num(); i++) {
+
+	}
+}

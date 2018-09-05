@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Engine.h"
+#include "Classes/Components/SplineComponent.h"
+#include "Track.h"
 #include "NeuralNetwork.h"
 #include "Car.h"
 #include "Containers/Array.h"
@@ -36,12 +38,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Controller")
 		int population = 30;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Our Spawning Object")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,Category = "AI Controller")
 		TSubclassOf<class ACar> OurSpawningObject;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "AI Controller")
+		ATrack *OurTrack;
 
 	TArray<ACar*> Cars;
 
 	NeuralNetwork best;
 private:
 	FString RelativePath = FPaths::GameContentDir();
+
+	int n_target;
+
+	int current_target;
+	float circuit_ditance;
+
+	void CheckHit();
+	void InitLine();
+	void PercentageRace();
 };

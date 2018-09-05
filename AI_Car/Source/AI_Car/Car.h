@@ -68,6 +68,8 @@ public:
 
 	void Change();
 
+	int lastTarget;
+
 private:
 	float proportion;
 };

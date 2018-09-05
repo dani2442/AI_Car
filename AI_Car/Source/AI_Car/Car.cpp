@@ -70,7 +70,7 @@ void ACar::Tick(float DeltaTime)
 			if (GEngine) {
 				float distance = (OutHit.ImpactPoint - start).Size()*proportion;
 				Input.Add(distance);
-				GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
+				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
 				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Actor: %s"), *OutHit.GetActor()->GetName()));
 			}
 		}
@@ -99,7 +99,7 @@ void ACar::OnCompHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimit
 {
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL)) {
 		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(-1,1.f, FColor::Green, FString::Printf(TEXT("I Just hit:%s"), *OtherActor->GetName()));
+			//GEngine->AddOnScreenDebugMessage(-1,1.f, FColor::Green, FString::Printf(TEXT("I Just hit:%s"), *OtherActor->GetName()));
 			//this->Destroy();
 			hit = true;
 		}
