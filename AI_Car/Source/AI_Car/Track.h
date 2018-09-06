@@ -35,6 +35,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyCategory")
 		bool FinishOnStart = true;
 
-	
+	TArray<FVector> Distance;
 
+	TArray<FVector> Centers;
+	int n_target;
+
+	void InitCenters();
+
+private:
+
+	FVector CalcCenter(); float h_square[3], h_divisor;
+
+	int position = 2;
+	FVector points[3];
 };

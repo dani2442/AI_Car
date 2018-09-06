@@ -48,9 +48,8 @@ public:
 
 	NeuralNetwork best;
 private:
-	FString RelativePath = FPaths::GameContentDir();
+	FString RelativePath = FPaths::ProjectContentDir();
 
-	int n_target;
 
 	int current_target;
 	float circuit_ditance;

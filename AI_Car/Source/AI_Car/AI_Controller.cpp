@@ -97,16 +97,19 @@ void AAI_Controller::CheckHit() {
 
 void AAI_Controller::InitLine()
 {
-	this->n_target = OurTrack->PathSpline->GetNumberOfSplinePoints();
-
 	FVector carloc = GetActorLocation();
 	FVector target[2];
 	float distance = 0.f, distance2 = 1000000000.f,newdistance;
 	int point=0;
 	bool state = true;
 
-	target[!state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(n_target);
-	for (int i = 0; i < n_target; i++) {
+	if (OurTrack->FinishOnStart) {
+		target[!state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(OurTrack->n_target);
+	}
+	else {
+		target[!state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(0);
+	}
+	for (int i = !OurTrack->FinishOnStart; i < OurTrack->n_target; i++) {
 		target[state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(i);
 
 		newdistance = pow(carloc.X - target[state].X, 2) + pow(carloc.Y - target[state].Y, 2);
@@ -128,7 +131,5 @@ void AAI_Controller::InitLine()
 
 void AAI_Controller::PercentageRace()
 {
-	for (int i = 0; i < Cars.Num(); i++) {
 
-	}
 }
