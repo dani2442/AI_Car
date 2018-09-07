@@ -37,6 +37,7 @@ void AAI_Controller::Tick(float DeltaTime)
 void AAI_Controller::Initialize(bool learn)
 {
 	FVector Location = GetActorLocation();
+	this->init_target = OurTrack->CalcNearestPoint(Location);
 	FRotator Rotation(0.f, 0.0f, 0.0f);
 	FTransform transform(Rotation, Location);
 	FActorSpawnParameters SpawnInfo;
@@ -53,13 +54,20 @@ void AAI_Controller::Initialize(bool learn)
 	}
 
 	for (int i = 0; i < population; i++) {
-		Cars[i]->lastTarget=OurTrack->CalcNearestPoint(Location);
+		Cars[i]->lastTarget=init_target;
 		if (i >= show_cars) {
 			Cars[i]->OurVisibleActor->SetVisibility(false);
 		}
 		Cars[i]->FinishSpawning(transform);
 	}
 	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("first number:%f"), best.NN[0][0][0]));
+}
+
+void AAI_Controller::ReInitialize()
+{
+	for (int i = 0; i < Cars.Num(); i++) {
+		Cars[i]->Reset(GetActorTransform(),init_target);
+	}
 }
 
 void AAI_Controller::Learning()
@@ -71,7 +79,18 @@ void AAI_Controller::Learning()
 	}
 }
 
-
+void AAI_Controller::CheckHit() {
+	int Death=0;
+	for (int i = 0; i < Cars.Num() ; i++) {
+		if (Cars[i]->hit) {
+			Death++;
+		}
+	}
+	if (Death == population) {
+		ReInitialize();
+	}
+}
+/*
 void AAI_Controller::CheckHit() {
 	for (int i = 0; i < Cars.Num() ; i++) {
 		if (Cars[i]->hit) {
@@ -93,14 +112,16 @@ void AAI_Controller::CheckHit() {
 		}
 	}
 }
-
+*/
 void AAI_Controller::RefreshCarPosition()
 {
 	for (int i = 0; i < Cars.Num(); i++) {
-		OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);
-		GEngine->AddOnScreenDebugMessage(-1,delta, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i,Cars[i]->lastTarget));
-		Cars[i]->distance = OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
-		GEngine->AddOnScreenDebugMessage(-1,delta, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->distance,OurTrack->TotalDistance));
+		if (!Cars[i]->hit) {
+			OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);
+			GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i, Cars[i]->lastTarget));
+			Cars[i]->percentage = OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
+			GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
+		}
 	}
 	
 }

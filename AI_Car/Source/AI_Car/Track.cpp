@@ -41,14 +41,14 @@ void ATrack::Init()
 }
 
 void ATrack::InitCenters() {
-	points[0]=PathSpline->GetWorldLocationAtSplinePoint(n_target-1);
-	points[1]=PathSpline->GetWorldLocationAtSplinePoint(0);
+	points[0]=SplinePoints[n_target-1];
+	points[1]=SplinePoints[0];
 	for (int i = 0; i < n_target-1; i++) {
-		points[position % 3]=PathSpline->GetWorldLocationAtSplinePoint(i+1);
+		points[position % 3]=SplinePoints[i+1];
 		Centers.Add(CalcCenter());
 		position++;
 	}
-	points[position % 3] = PathSpline->GetWorldLocationAtSplinePoint(0);
+	points[position % 3] = SplinePoints[0];
 	Centers.Add(CalcCenter());
 }
 
@@ -58,11 +58,11 @@ void ATrack::InitCircuitDistance()
 	FVector target[2];
 	bool state = true;
 
-	target[!state]=PathSpline->GetWorldLocationAtSplinePoint(0);
+	target[!state]=SplinePoints[0];
 	AcumulativeDistance.Add(distance);
 
 	for (int i = 1; i < n_target; i++) {
-		target[state]=PathSpline->GetWorldLocationAtSplinePoint(i);
+		target[state]=SplinePoints[i];
 		
 		distance += sqrt(pow(target[0].X - target[1].X, 2) + pow(target[0].Y - target[1].Y, 2));
 		//UE_LOG(LogTemp,Warning,TEXT("acumulative distance %i: %f"),i, distance );
@@ -108,13 +108,13 @@ void ATrack::UpdatePoint(const FVector & actorloc,int& index)
 	float distance2 = 10000000.f;
 	int nextindex;
 
-	target[0] = PathSpline->GetWorldLocationAtSplinePoint(index);
+	target[0] = SplinePoints[index];
 	if (index == n_target-1) {
-		target[1] = PathSpline->GetWorldLocationAtSplinePoint(0);
+		target[1] = SplinePoints[0];
 		nextindex = 0;
 	}
 	else {
-		target[1] = PathSpline->GetWorldLocationAtSplinePoint(index + 1);
+		target[1] = SplinePoints[index + 1];
 		nextindex = index + 1;
 	}
 	
@@ -127,16 +127,16 @@ void ATrack::UpdatePoint(const FVector & actorloc,int& index)
 float ATrack::CalcRectPosition(const FVector & actorloc, const int index)
 {
 	FVector t[3]; 
-	t[1]= PathSpline->GetWorldLocationAtSplinePoint(index);
+	t[1]= SplinePoints[index];
 	if (index != 0)
-		t[0]=PathSpline->GetWorldLocationAtSplinePoint(index-1);
+		t[0]=SplinePoints[index-1];
 	else
-		t[0] = PathSpline->GetWorldLocationAtSplinePoint(n_target-1);
+		t[0] = SplinePoints[n_target-1];
 
 	if(index!=n_target-1)
-		t[2]=PathSpline->GetWorldLocationAtSplinePoint(index+1);
+		t[2]=SplinePoints[index+1];
 	else
-		t[2]=PathSpline->GetWorldLocationAtSplinePoint(0);
+		t[2]=SplinePoints[0];
 
 	float m, n;
 	m = (t[1].Y - Centers[index].Y) / (t[1].X -  Centers[index].X);
@@ -164,7 +164,7 @@ float ATrack::CalcRectPosition(const FVector & actorloc, const int index)
 	result.X = ( n2-n1) / (m1 - m2);
 	result.Y = result.X*m1 + n1;
 	
-	DrawDebugLine(GetWorld(), t[1], t[indexnext], FColor::Blue, false, 1.f, 0,35);
+	//DrawDebugLine(GetWorld(), t[1], t[indexnext], FColor::Blue, false, 1.f, 0,35);
 
 	float proportion;
 	int indexnext2 = indexnext * 0.5 - 1;
@@ -181,7 +181,7 @@ float ATrack::CalcRectPosition(const FVector & actorloc, const int index)
 
 	float percentage = distance / TotalDistance;
 	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("percentage:%f"), percentage));
-	return distance;
+	return percentage;
 }
 
 FVector ATrack::CalcCenter()

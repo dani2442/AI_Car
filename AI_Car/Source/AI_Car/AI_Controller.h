@@ -30,6 +30,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void Initialize(bool learn=false);
+	void ReInitialize();
 	void Learning();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Controller")
@@ -50,6 +51,7 @@ public:
 private:
 	FString RelativePath = FPaths::ProjectContentDir();
 
+	int init_target;
 	int current_target;
 
 	void CheckHit();

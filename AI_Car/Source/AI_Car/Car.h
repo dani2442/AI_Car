@@ -66,6 +66,7 @@ public:
 	NeuralNetwork nn;
 	bool hit = false;
 
+	void Reset(FTransform transform,int initTarget);
 	void Change();
 
 	int lastTarget=0;
@@ -75,6 +76,14 @@ public:
 	int laps;
 
 private:
+	TArray<float> Input;
+
 	float NNproportion;
+
+	float deltatime;
+
+	void UpdateStick();
+	void UpdateLocation();
+	void UpdateRotation();
 };
 
