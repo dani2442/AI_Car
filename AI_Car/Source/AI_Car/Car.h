@@ -70,6 +70,7 @@ public:
 
 	int lastTarget=0;
 
+	float distance;
 	float percentage;
 	int laps;
 

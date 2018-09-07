@@ -140,7 +140,7 @@ float ATrack::CalcRectPosition(const FVector & actorloc, const int index)
 
 	float m, n;
 	m = (t[1].Y - Centers[index].Y) / (t[1].X -  Centers[index].X);
-	n =  Centers[index].Y - m *  Centers[index].X;
+	n = Centers[index].Y - m * Centers[index].X;
 
 	bool t1=(actorloc.X*m + n - actorloc.Y) > 0 ? 1 : 0;
 	bool t2 = (t[2].X*m + n - t[2].Y) > 0 ? 1 : 0;
@@ -150,40 +150,45 @@ float ATrack::CalcRectPosition(const FVector & actorloc, const int index)
 		indexnext = 2;
 	else
 		indexnext = 0;
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("indexnext:%i"), indexnext));
 
 	float m1, n1, m2, n2;
+
 	m1=(t[1].Y - t[indexnext].Y) / (t[1].X -  t[indexnext].X);
-	n1 = t[1].Y - m * t[1].X;
+	n1 = t[1].Y - m1 * t[1].X;
 
 	m2=(actorloc.Y - Centers[index].Y) / (actorloc.X -  Centers[index].X);
-	n2 = actorloc.Y - m * actorloc.X;
+	n2 = actorloc.Y - m2 * actorloc.X;
 
 	FVector result;
-	result.X = (n1 - n2) / (m2 - m1);
+	result.X = ( n2-n1) / (m1 - m2);
 	result.Y = result.X*m1 + n1;
+	
+	DrawDebugLine(GetWorld(), t[1], t[indexnext], FColor::Blue, false, 1.f, 0,35);
 
 	float proportion;
+	int indexnext2 = indexnext * 0.5 - 1;
 	if (t[1].X - t[indexnext].X > 0.1) {
-		proportion = (result.X - t[1].X) / (t[indexnext].X - t[1].X);
+		proportion = abs((result.X - t[1+indexnext2].X) / (t[indexnext].X - t[1].X));
 	}
 	else {
-		proportion = (result.Y - t[1].Y) / (t[indexnext].Y - t[1].Y);
+		proportion = abs((result.Y - t[1+indexnext2].Y) / (t[indexnext].Y - t[1].Y));
 	}
 
 	float distance;
 	indexnext = indexnext*0.5-1;
-	distance=AcumulativeDistance[index + indexnext] + proportion * (AcumulativeDistance[index+indexnext+1] - AcumulativeDistance[index + indexnext]);
+	distance=AcumulativeDistance[index + indexnext2] + proportion * (AcumulativeDistance[index+indexnext2+1] - AcumulativeDistance[index + indexnext2]);
 
 	float percentage = distance / TotalDistance;
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("percentage:%f"), percentage));
-	return percentage;
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("percentage:%f"), percentage));
+	return distance;
 }
 
 FVector ATrack::CalcCenter()
 {
-	UE_LOG(LogTemp,Warning,TEXT("[0]: %s"), *points[0].ToString() );
-	UE_LOG(LogTemp,Warning,TEXT("[1]: %s"), *points[1].ToString() );
-	UE_LOG(LogTemp,Warning,TEXT("[2]: %s"), *points[2].ToString() );
+	//UE_LOG(LogTemp,Warning,TEXT("[0]: %s"), *points[0].ToString() );
+	//UE_LOG(LogTemp,Warning,TEXT("[1]: %s"), *points[1].ToString() );
+	//UE_LOG(LogTemp,Warning,TEXT("[2]: %s"), *points[2].ToString() );
 
 	//int n_p = position % 3 == 2 ? 1 : -1;
 
@@ -203,7 +208,7 @@ FVector ATrack::CalcCenter()
 		h_divisor;
 
 	temp.Z = 0;
-	UE_LOG(LogTemp,Warning,TEXT("center: %s"), *temp.ToString() );
+	//UE_LOG(LogTemp,Warning,TEXT("center: %s"), *temp.ToString() );
 	return temp;
 	
 }

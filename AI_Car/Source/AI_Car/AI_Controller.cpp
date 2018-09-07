@@ -99,6 +99,8 @@ void AAI_Controller::RefreshCarPosition()
 	for (int i = 0; i < Cars.Num(); i++) {
 		OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);
 		GEngine->AddOnScreenDebugMessage(-1,delta, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i,Cars[i]->lastTarget));
+		Cars[i]->distance = OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
+		GEngine->AddOnScreenDebugMessage(-1,delta, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->distance,OurTrack->TotalDistance));
 	}
 	
 }
