@@ -50,11 +50,10 @@ public:
 private:
 	FString RelativePath = FPaths::ProjectContentDir();
 
-
 	int current_target;
-	float circuit_ditance;
 
 	void CheckHit();
-	void InitLine();
-	void PercentageRace();
+	void RefreshCarPosition();
+
+	float delta;
 };

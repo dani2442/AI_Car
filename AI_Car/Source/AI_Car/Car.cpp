@@ -38,7 +38,7 @@ ACar::ACar()
 	TArray<int> topology = { StickNumber,3,2 };
 	nn = NeuralNetwork(topology);
 
-	proportion =  4.f/MaxDistance;
+	NNproportion =  4.f/MaxDistance;
 
 }
 
@@ -68,14 +68,14 @@ void ACar::Tick(float DeltaTime)
 		bool isHit = GetWorld()->LineTraceSingleByObjectType(OutHit, start, end, ECC_WorldStatic, CollisionParams);
 		if (isHit && OutHit.bBlockingHit) {
 			if (GEngine) {
-				float distance = (OutHit.ImpactPoint - start).Size()*proportion;
+				float distance = (OutHit.ImpactPoint - start).Size()*NNproportion;
 				Input.Add(distance);
 				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
 				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Actor: %s"), *OutHit.GetActor()->GetName()));
 			}
 		}
 		else {
-			Input.Add(MaxDistance*proportion);
+			Input.Add(MaxDistance*NNproportion);
 		}
 		actorRot.Yaw += stickrotation;
 		//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("result: %f"),  Input[i]));

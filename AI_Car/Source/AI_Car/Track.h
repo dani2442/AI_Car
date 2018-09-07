@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Engine.h"
 #include "Classes/Components/SplineComponent.h"
 #include "Runtime/Engine/Classes/Engine/TargetPoint.h"
 #include "CoreMinimal.h"
@@ -32,15 +33,25 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "MyCategory")
 		UStaticMeshComponent* OurTrack;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyCategory")
-		bool FinishOnStart = true;
+	bool FinishOnStart;
 
-	TArray<FVector> Distance;
+	TArray<FVector> SplinePoints;
+
+	TArray<float> AcumulativeDistance;
 
 	TArray<FVector> Centers;
 	int n_target;
 
+	float TotalDistance;
+
+	void Init();
 	void InitCenters();
+	void InitCircuitDistance();
+
+	int CalcNearestPoint(const FVector& actorloc);
+	void UpdatePoint(const FVector& actorloc,int &index);
+
+	float CalcRectPosition(const FVector& actorloc,const int index);
 
 private:
 

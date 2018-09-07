@@ -17,12 +17,8 @@ void AAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InitLine();
-
 	this->Initialize(); // Spawn objects
 	Cars[0]->nn.Load(RelativePath+"NNdata/dani.json");
-
-
 }
 
 
@@ -31,8 +27,10 @@ void AAI_Controller::BeginPlay()
 void AAI_Controller::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+	delta = DeltaTime;
+
 	CheckHit();
+	RefreshCarPosition();
 	
 }
 
@@ -55,6 +53,7 @@ void AAI_Controller::Initialize(bool learn)
 	}
 
 	for (int i = 0; i < population; i++) {
+		Cars[i]->lastTarget=OurTrack->CalcNearestPoint(Location);
 		if (i >= show_cars) {
 			Cars[i]->OurVisibleActor->SetVisibility(false);
 		}
@@ -95,41 +94,11 @@ void AAI_Controller::CheckHit() {
 	}
 }
 
-void AAI_Controller::InitLine()
+void AAI_Controller::RefreshCarPosition()
 {
-	FVector carloc = GetActorLocation();
-	FVector target[2];
-	float distance = 0.f, distance2 = 1000000000.f,newdistance;
-	int point=0;
-	bool state = true;
-
-	if (OurTrack->FinishOnStart) {
-		target[!state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(OurTrack->n_target);
+	for (int i = 0; i < Cars.Num(); i++) {
+		OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);
+		GEngine->AddOnScreenDebugMessage(-1,delta, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i,Cars[i]->lastTarget));
 	}
-	else {
-		target[!state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(0);
-	}
-	for (int i = !OurTrack->FinishOnStart; i < OurTrack->n_target; i++) {
-		target[state]=OurTrack->PathSpline->GetWorldLocationAtSplinePoint(i);
-
-		newdistance = pow(carloc.X - target[state].X, 2) + pow(carloc.Y - target[state].Y, 2);
-		if (newdistance < distance2) {
-			distance2 = newdistance;
-			point = i;
-		}
-
-		distance += sqrt(pow(target[0].X - target[1].X, 2) + pow(target[0].Y - target[1].Y, 2));
-		state = !state;
-	}
-	this->current_target = point;
-	this->circuit_ditance = distance;
-
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("distance total:%f"), distance));
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("nearest point:%i"), point));
 	
-}
-
-void AAI_Controller::PercentageRace()
-{
-
 }

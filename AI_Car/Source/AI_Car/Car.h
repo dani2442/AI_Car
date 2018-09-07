@@ -68,9 +68,12 @@ public:
 
 	void Change();
 
-	int lastTarget;
+	int lastTarget=0;
+
+	float percentage;
+	int laps;
 
 private:
-	float proportion;
+	float NNproportion;
 };
 
