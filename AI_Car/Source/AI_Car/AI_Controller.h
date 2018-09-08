@@ -89,6 +89,7 @@ public:
 	TArray<int> position;
 	void CalcPosition();
 
+	float refresh_frecuency=0.2;
 private:
 
 	float importance_diversity2;

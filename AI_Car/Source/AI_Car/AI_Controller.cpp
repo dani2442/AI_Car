@@ -50,8 +50,9 @@ void AAI_Controller::Tick(float DeltaTime)
 	delta = DeltaTime;
 	sumDelta += DeltaTime;
 
-	if (sumDelta > 0.3) {
-		RefreshCarPosition();
+	if (sumDelta > refresh_frecuency) {
+	RefreshCarPosition();
+		sumDelta = 0;
 	}
 	CheckHit();
 	
@@ -138,9 +139,9 @@ void AAI_Controller::RefreshCarPosition()
 	for (int i = 0; i < Cars.Num(); i++) {
 		if (!Cars[i]->hit) {
 			OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);
-			GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i, Cars[i]->lastTarget));
+			GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i, Cars[i]->lastTarget));
 			Cars[i]->percentage = OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
-			GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
+			GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
 		}
 
 		// Draw line and show mesh only if the car is between the 6 firsts
