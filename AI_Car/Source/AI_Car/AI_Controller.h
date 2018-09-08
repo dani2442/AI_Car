@@ -29,15 +29,46 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void Initialize(bool learn=false);
-	void ReInitialize();
-	void Learning();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Controller")
-		int show_cars = 6;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm")
+		int show_cars = 6; // Number of cars' mesh that are shown
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Controller")
-		int population = 30;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm")
+		int population = 30; // Number of individuals
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm")
+		float importance_diversity = 0.2; // Probability to be choosen = fitness * (1 - importance_diversity) + diversity * importance_diversity
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm")
+		bool crossover = true; // Do we use crossover?
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm",meta =(UIMin = "0.0", UIMax = "1.0"))
+		float crossover_rate = 0.2; // the probability to experience crossover
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm",meta =(UIMin = "0.0", UIMax = "1.0"))
+		float deadline = 0.2; // Avarage percentage that we select
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm",meta =(UIMin = "0.0", UIMax = "0.49"))
+		float population_selection = 0.1; // Number of indivuals that we select to create the next generation
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm",meta =(UIMin = "0.0", UIMax = "1.0"))
+		float mutation_rate = 0.5; // the probability to be mutated
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genetic Algorithm",meta =(UIMin = "0.0", UIMax = "1.0"))
+		float mutation_change = 0.2; // Maximum change that can experience a weight during mutation
+
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Neural Network")
+		int InputLayer=4; // Number of input neurons
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Neural Network")
+		TArray<int> HiddenLayer = { 3 }; // Topology of hidden layer
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Neural Network")
+		int OutputLayer= 2; // Number of outputs (fixed) turn right or left
+
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,Category = "AI Controller")
 		TSubclassOf<class ACar> OurSpawningObject;
@@ -45,11 +76,25 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "AI Controller")
 		ATrack *OurTrack;
 
-	TArray<ACar*> Cars;
 
-	NeuralNetwork best;
+
+	void Initialize(bool learn=false);
+	void ReInitialize();
+
+	TArray<ACar*> Cars;
+	TArray<float>Score;
+
+	void Probability();
+
 private:
+
+	float importance_diversity2;
+
 	FString RelativePath = FPaths::ProjectContentDir();
+
+	TArray<int> topology;
+
+	float delta;
 
 	int init_target;
 	int current_target;
@@ -57,5 +102,14 @@ private:
 	void CheckHit();
 	void RefreshCarPosition();
 
-	float delta;
+	float TotalDiversity=0;
+	void CalcDiversity();
+	float TotalFitness = 0;
+	void CalcFitness();
+
+	void GeneticAlgorithm();
+		void GA_Selection(); TArray<NeuralNetwork> selections;
+		void GA_Selection2();
+		void GA_Crossover();
+		void GA_Mutation();
 };

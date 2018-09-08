@@ -122,7 +122,7 @@ void ATrack::UpdatePoint(const FVector & actorloc,int& index)
 		index = nextindex;
 	}	
 }
-
+// TODO laps completition consideration
 
 float ATrack::CalcRectPosition(const FVector & actorloc, const int index)
 {

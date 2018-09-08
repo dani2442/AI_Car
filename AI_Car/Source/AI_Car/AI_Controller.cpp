@@ -9,6 +9,7 @@ AAI_Controller::AAI_Controller()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 	
 }
 
@@ -17,6 +18,21 @@ void AAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Init Score of each population
+	this->Score.Init(0, population);
+
+	// Init Neural Network of selected
+	int n_selected = (int)(population*population_selection);
+	for (int i = 0; i < n_selected; i++)
+		selections.Add(NeuralNetwork());
+
+	// Init topology
+	topology.Add(InputLayer);
+	for (auto&i : HiddenLayer)
+		topology.Add(i);
+	topology.Add(OutputLayer);
+
+	importance_diversity2 = 1 / (importance_diversity + 1);
 	this->Initialize(); // Spawn objects
 	Cars[0]->nn.Load(RelativePath+"NNdata/dani.json");
 }
@@ -49,12 +65,9 @@ void AAI_Controller::Initialize(bool learn)
 		Cars.Add(GetWorld()->SpawnActorDeferred<ACar>(OurSpawningObject,FTransform::Identity,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
 	}
 
-	if (learn) {
-		Learning();
-	}
-
 	for (int i = 0; i < population; i++) {
 		Cars[i]->lastTarget=init_target;
+		Cars[i]->InitNet(topology);
 		if (i >= show_cars) {
 			Cars[i]->OurVisibleActor->SetVisibility(false);
 		}
@@ -65,17 +78,22 @@ void AAI_Controller::Initialize(bool learn)
 
 void AAI_Controller::ReInitialize()
 {
-	for (int i = 0; i < Cars.Num(); i++) {
-		Cars[i]->Reset(GetActorTransform(),init_target);
+	Probability();
+	GeneticAlgorithm();
+	for (int i = 0; i < population; i++) {
+		Cars[i]->ResetMovement(GetActorTransform(),init_target);
 	}
 }
 
-void AAI_Controller::Learning()
+void AAI_Controller::Probability()
 {
-	Cars[0]->nn = best;
-	for (int i = 1; i < population;i++) { // TODO first part
-		Cars[i]->nn = best;
-		Cars[i]->Change();
+	CalcFitness();
+	CalcDiversity();
+
+	Score[0] = (Cars[0]->fitness + Cars[0]->diversity);
+	for (int i = 1; i < Score.Num(); i++) {
+		Score[i] = Score[i - 1] + (Cars[i]->fitness +  Cars[i]->diversity);
+		UE_LOG(LogTemp,Warning,TEXT("scores[%i]: %f + %f => %f"),i, Cars[i]->fitness,Cars[i]->diversity,Score[i]);
 	}
 }
 
@@ -90,29 +108,7 @@ void AAI_Controller::CheckHit() {
 		ReInitialize();
 	}
 }
-/*
-void AAI_Controller::CheckHit() {
-	for (int i = 0; i < Cars.Num() ; i++) {
-		if (Cars[i]->hit) {
-			if (Cars.Num() == 1) {
-				Cars[i]->best = true;
-				Cars[i]->nn.Write(RelativePath+"NNdata/dani.json");
-				best = Cars[i]->nn;
-				Cars[i]->Destroy();
-				Cars.RemoveAt(i);
-				Initialize(true);
-				//break;
-			}
-			else {
 
-				Cars[i]->Destroy();
-				Cars.RemoveAt(i);
-				//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("number:%i"), Cars.Num()));
-			}
-		}
-	}
-}
-*/
 void AAI_Controller::RefreshCarPosition()
 {
 	for (int i = 0; i < Cars.Num(); i++) {
@@ -124,4 +120,129 @@ void AAI_Controller::RefreshCarPosition()
 		}
 	}
 	
+}
+
+void AAI_Controller::CalcDiversity()
+{
+	this->TotalDiversity = 0;
+	for(int i=0;i<population;i++)
+		Cars[i]->diversity = 0;
+
+	float t = 0;
+	for (int i = 0; i < population; i++) {
+		for (int j = i+1; j < population; j++) {
+			for (int x = 0; x < topology.Num()-1;x++) {
+				for (int y = 0; y < topology[x];y++) {
+					for (int z = 0; z < topology[x+1];z++) {
+						float diversity=abs(Cars[j]->nn.NN[x][y][z]-Cars[i]->nn.NN[x][y][z]);
+						Cars[i]->diversity += diversity;
+						Cars[j]->diversity += diversity;
+					}
+				}
+			}
+		}
+		if (Cars[i]->percentage == 0) // Remove the ones that does not reach the deadline
+			Cars[i]->diversity = 0;
+		TotalDiversity += Cars[i]->diversity;
+	}
+	TotalDiversity = 1 / TotalDiversity * importance_diversity;
+	for (int i = 0; i < population; i++) {
+		Cars[i]->diversity *= TotalDiversity;
+	}
+}
+
+void AAI_Controller::CalcFitness()
+{
+	RefreshCarPosition();
+	this->TotalFitness = 0;
+	float avarage=0;
+	for (int i = 0; i < population; i++) {
+		avarage += Cars[i]->percentage;
+	}
+	avarage = avarage * deadline / population;
+	for (int i = 0; i < population; i++) {
+		if (Cars[i]->percentage < avarage)// Remove the ones which are the worst
+			Cars[i]->percentage = 0;
+		TotalFitness += Cars[i]->percentage;
+	}
+	TotalFitness = 1 / TotalFitness*(1-importance_diversity);
+	for (int i = 0; i < population; i++) {
+		Cars[i]->fitness = Cars[i]->percentage * TotalFitness;
+	}
+}
+
+void AAI_Controller::GeneticAlgorithm()
+{
+	GA_Selection();
+	GA_Crossover();
+	GA_Mutation();
+}
+
+void AAI_Controller::GA_Selection()
+{	
+	// Select the best
+	float last_best=10000000.f; int last_best_index;
+	for (int i = 0; i < Score.Num(); i++) {
+		if (Score[i] < last_best) {
+			last_best = Score[i];
+			last_best_index = i;
+		}
+	}
+	selections[0].NN = Cars[last_best_index]->nn.NN;
+
+	float n;
+	for (int i = 1; i < selections.Num();i++) {
+		n = FMath::FRand();
+		for (int j = 0; j < Score.Num(); j++) {
+			if ( n < Score[j]) {
+				selections[i].NN = Cars[j]->nn.NN;
+				break;
+			}
+		}
+	}
+
+	Cars[0]->nn.NN = selections[0].NN;
+	for (int i = 1; i < selections.Num()*2; i++) {
+		Cars[i]->nn.NN = selections[i%selections.Num()].NN;
+	}
+}
+
+void AAI_Controller::GA_Crossover()
+{
+	if (!crossover)
+		return;
+
+	int a, b, c;
+	for (int i = selections.Num()*2; i < population; i++) {
+		a = FMath::RandRange(0, selections.Num()-1);
+		b = FMath::RandRange(0, selections.Num()-1);
+		c = FMath::RandRange(0, population - 1);
+
+		for (int x = 0; x < topology.Num()-1;x++) {
+			for (int y = 0; y < topology[x];y++) {
+				for (int z = 0; z < topology[x+1];z++) {
+					if (FMath::FRand()>crossover_rate) {
+						Cars[i]->nn.NN[x][y][z] = selections[a].NN[x][y][z];
+					}
+					else {
+						Cars[i]->nn.NN[x][y][z] = selections[b].NN[x][y][z];
+					}
+				}
+			}
+		}
+	}
+}
+
+void AAI_Controller::GA_Mutation()
+{
+	for (int i = selections.Num(); i < population; i++) {
+		for (auto& a : Cars[i]->nn.NN) {
+			for (auto&b : a) {
+				for (auto&c : b) {
+					if(FMath::FRand()<mutation_rate)
+						c += (FMath::FRand() * 2 - 1)*mutation_change;
+				}
+			}
+		}
+	}
 }

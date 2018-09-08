@@ -66,14 +66,18 @@ public:
 	NeuralNetwork nn;
 	bool hit = false;
 
-	void Reset(FTransform transform,int initTarget);
+	void ResetMovement(FTransform transform,int initTarget);
 	void Change();
 
 	int lastTarget=0;
 
-	float distance;
 	float percentage;
 	int laps;
+
+	float diversity = 0;
+	float fitness = 0;
+
+	void InitNet(TArray<int>topology);
 
 private:
 	TArray<float> Input;

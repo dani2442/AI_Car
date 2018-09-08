@@ -22,6 +22,23 @@ NeuralNetwork::~NeuralNetwork()
 {
 }
 
+void NeuralNetwork::Init(TArray<int> topology)
+{
+	NN.Empty();
+
+	for (int i = 0; i < topology.Num()-1; i++) {
+		TArray<TArray<float>> layer;
+		for (int j = 0; j < topology[i]; j++) {
+			TArray<float> sublayer;
+			for (int k = 0; k < topology[i + 1]; k++) {
+				sublayer.Add(FMath::FRand());
+			}
+			layer.Add(sublayer);
+		}
+		NN.Add(layer);
+	}
+}
+
 TArray<float> NeuralNetwork::forward(TArray<float> data)
 {
 	for (int i = 0; i < NN.Num(); ++i) {

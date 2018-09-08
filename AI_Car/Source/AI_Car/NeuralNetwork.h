@@ -23,6 +23,8 @@ public:
 	NeuralNetwork(TArray<int> topology);
 	~NeuralNetwork();
 
+	void Init(TArray<int> topology);
+
 	TArray<float> forward(TArray<float> data);
 
 	void Load(FString);

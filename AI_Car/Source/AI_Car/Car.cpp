@@ -35,13 +35,7 @@ ACar::ACar()
 	//UStaticMesh* Asset = MeshAsset.Object;
 	//OurVisibleActor->SetStaticMesh(Asset);
 
-	TArray<int> topology = { StickNumber,3,2 };
-	nn = NeuralNetwork(topology);
-
 	NNproportion =  4.f/MaxDistance;
-
-	Input.Init(0, StickNumber);
-
 }
 
 // Called when the game starts or when spawned
@@ -83,11 +77,12 @@ void ACar::OnCompHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimit
 	}
 }
 
-void ACar::Reset(FTransform transform,int initTarget)
+void ACar::ResetMovement(FTransform transform,int initTarget)
 {
 	this->SetActorTransform(transform);
 	this->hit = false;
 	this->lastTarget = initTarget;
+	this->laps = 0;
 	this->SetActorTickEnabled(true);
 }
 
@@ -99,6 +94,12 @@ void ACar::Change() {
 			}
 		}
 	}
+}
+
+void ACar::InitNet(TArray<int> topology)
+{
+	nn.Init(topology);
+	Input.Init(0, topology[0]);
 }
 
 void ACar::UpdateStick()
