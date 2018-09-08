@@ -113,7 +113,8 @@ void ACar::UpdateStick()
 	float stickrotation = amplitude / (StickNumber-1);
 	for (int i = 0; i < StickNumber; ++i) {
 		FVector end(actorRot.Vector() * 2000 + start);
-		DrawDebugLine(GetWorld(), start, end, FColor::Green, false, deltatime+0.01, 0, 1);
+		if(drawLine)
+			DrawDebugLine(GetWorld(), start, end, FColor::Green, false, deltatime+0.01, 0, 1);
 		bool isHit = GetWorld()->LineTraceSingleByObjectType(OutHit, start, end, ECC_WorldStatic, CollisionParams);
 		if (isHit && OutHit.bBlockingHit) {
 			if (GEngine) {

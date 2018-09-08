@@ -79,6 +79,8 @@ public:
 
 	void InitNet(TArray<int>topology);
 
+	bool drawLine=false;
+
 private:
 	TArray<float> Input;
 

@@ -177,7 +177,7 @@ float ATrack::CalcRectPosition(const FVector & actorloc, const int index)
 
 	float distance;
 	indexnext = indexnext*0.5-1;
-	distance=AcumulativeDistance[index + indexnext2] + proportion * (AcumulativeDistance[index+indexnext2+1] - AcumulativeDistance[index + indexnext2]);
+	distance=AcumulativeDistance[index + indexnext2] + proportion * (AcumulativeDistance[index+indexnext2+1] - AcumulativeDistance[index + indexnext2]); // TODO implement error when index= -1
 
 	float percentage = distance / TotalDistance;
 	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("percentage:%f"), percentage));

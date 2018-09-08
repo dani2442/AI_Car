@@ -86,6 +86,9 @@ public:
 
 	void Probability();
 
+	TArray<int> position;
+	void CalcPosition();
+
 private:
 
 	float importance_diversity2;
@@ -95,6 +98,7 @@ private:
 	TArray<int> topology;
 
 	float delta;
+	float sumDelta=0;
 
 	int init_target;
 	int current_target;
@@ -109,7 +113,6 @@ private:
 
 	void GeneticAlgorithm();
 		void GA_Selection(); TArray<NeuralNetwork> selections;
-		void GA_Selection2();
 		void GA_Crossover();
 		void GA_Mutation();
 };

@@ -26,6 +26,10 @@ void AAI_Controller::BeginPlay()
 	for (int i = 0; i < n_selected; i++)
 		selections.Add(NeuralNetwork());
 
+	// Init positions
+	for (int i = 0; i < population; i++)
+		position.Add(i);
+
 	// Init topology
 	topology.Add(InputLayer);
 	for (auto&i : HiddenLayer)
@@ -44,9 +48,13 @@ void AAI_Controller::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	delta = DeltaTime;
+	sumDelta += DeltaTime;
 
+	if (sumDelta > 0.3) {
+		RefreshCarPosition();
+	}
 	CheckHit();
-	RefreshCarPosition();
+	
 	
 }
 
@@ -97,6 +105,21 @@ void AAI_Controller::Probability()
 	}
 }
 
+void AAI_Controller::CalcPosition()
+{
+	int k;
+	for (int i = 0; i < show_cars; i++) {
+		for (int j = i + 1; j < population; j++) {
+			if (Cars[position[i]]->percentage < Cars[position[j]]->percentage) {
+				//GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("shown %i"), j));
+				k = position[i];
+				position[i] = position[j];
+				position[j] = k;
+			}
+		}
+	}
+}
+
 void AAI_Controller::CheckHit() {
 	int Death=0;
 	for (int i = 0; i < Cars.Num() ; i++) {
@@ -111,6 +134,7 @@ void AAI_Controller::CheckHit() {
 
 void AAI_Controller::RefreshCarPosition()
 {
+	int count=0;
 	for (int i = 0; i < Cars.Num(); i++) {
 		if (!Cars[i]->hit) {
 			OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);
@@ -118,7 +142,20 @@ void AAI_Controller::RefreshCarPosition()
 			Cars[i]->percentage = OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
 			GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
 		}
+
+		// Draw line and show mesh only if the car is between the 6 firsts
+		if (i<show_cars) {
+			Cars[position[i]]->OurVisibleActor->SetVisibility(true);
+			Cars[position[i]]->drawLine = true;
+			//GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("shown %i"), position[count]));
+		}
+		else {
+			Cars[position[i]]->drawLine = false;
+			Cars[position[i]]->OurVisibleActor->SetVisibility(false);
+		}
+		
 	}
+	CalcPosition();
 	
 }
 
