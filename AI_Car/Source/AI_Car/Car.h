@@ -35,6 +35,11 @@ public:
 		UStaticMeshComponent* OurVisibleActor;
 
 	UPROPERTY(EditAnywhere)
+    USpringArmComponent* OurCameraSpringArm;
+	UPROPERTY(EditAnywhere)
+    UCameraComponent* OurCamera;
+
+	UPROPERTY(EditAnywhere)
 		UBoxComponent* BoxComponent;
 
 	UPROPERTY(EditAnywhere)
@@ -81,8 +86,11 @@ public:
 
 	bool drawLine=false;
 
+	void StartPossessing();
+	void StopPossessing();
 private:
 	TArray<float> Input;
+	TArray<float> result;
 
 	float NNproportion;
 

@@ -31,7 +31,8 @@ void NeuralNetwork::Init(TArray<int> topology)
 		for (int j = 0; j < topology[i]; j++) {
 			TArray<float> sublayer;
 			for (int k = 0; k < topology[i + 1]; k++) {
-				sublayer.Add(FMath::FRand());
+				float my = FMath::FRand();
+				sublayer.Add(my);
 			}
 			layer.Add(sublayer);
 		}
@@ -86,7 +87,7 @@ void NeuralNetwork::Create(TArray<int> topology)
 		for (int j = 0; j < topology[i]; j++) {
 			TArray<float> sublayer;
 			for (int k = 0; k < topology[i + 1]; k++) {
-				sublayer.Add(FMath::FRand());
+				sublayer.Add(FMath::FRand()*2-1);
 			}
 			layer.Add(sublayer);
 		}

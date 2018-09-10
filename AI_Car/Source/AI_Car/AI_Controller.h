@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Engine.h"
+#include "Kismet/GameplayStatics.h"
 #include "Classes/Components/SplineComponent.h"
 #include "Track.h"
 #include "NeuralNetwork.h"
@@ -76,7 +77,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "AI Controller")
 		ATrack *OurTrack;
 
-
+	APlayerController* OurPlayer;
 
 	void Initialize(bool learn=false);
 	void ReInitialize();
@@ -87,6 +88,7 @@ public:
 	void Probability();
 
 	TArray<int> position;
+	int last_best=0;
 	void CalcPosition();
 
 	float refresh_frecuency=0.2;

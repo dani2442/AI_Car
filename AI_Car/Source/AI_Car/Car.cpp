@@ -16,6 +16,16 @@ ACar::ACar()
 	Component = CreateDefaultSubobject<UBoxComponent>(TEXT("Our box"));
 	RootComponent = Component;
 
+	OurCameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
+	OurCameraSpringArm->SetupAttachment(RootComponent);
+	OurCameraSpringArm->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 50.0f), FRotator(-60.0f, 0.0f, 0.0f));
+	OurCameraSpringArm->TargetArmLength = 400.f;
+	OurCameraSpringArm->bEnableCameraLag = true;
+	OurCameraSpringArm->CameraLagSpeed = 0.0f;
+	
+	OurCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("GameCamera"));
+	OurCamera->SetupAttachment(OurCameraSpringArm, USpringArmComponent::SocketName);
+
 	OurVisibleActor->SetupAttachment(RootComponent);
 	//Component->SetupAttachment(RootComponent);
 	BoxComponent->SetupAttachment(RootComponent);
@@ -36,6 +46,8 @@ ACar::ACar()
 	//OurVisibleActor->SetStaticMesh(Asset);
 
 	NNproportion =  4.f/MaxDistance;
+
+	//AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
 // Called when the game starts or when spawned
@@ -102,9 +114,20 @@ void ACar::InitNet(TArray<int> topology)
 	Input.Init(0, topology[0]);
 }
 
+void ACar::StartPossessing()
+{
+	GetController()->Possess(this);
+}
+
+void ACar::StopPossessing()
+{
+	GetController()->UnPossess();
+}
+
 void ACar::UpdateStick()
 {
-	Input.Reserve(StickNumber);
+	if (Input.Num() == 0)
+		return;
 	FHitResult OutHit;
 	FVector start = this->GetActorLocation();
 	FRotator actorRot(this->GetActorRotation());
@@ -131,7 +154,7 @@ void ACar::UpdateStick()
 		//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("result: %f"),  Input[i]));
 	}
 	
-	//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0] - result[1]));
+	
 }
 
 void ACar::UpdateLocation()
@@ -141,6 +164,9 @@ void ACar::UpdateLocation()
 
 void ACar::UpdateRotation()
 {
-	TArray<float> result=nn.forward(Input);
-	SetActorRotation(FRotator(0.f,GetActorRotation().Yaw + RotationVelocityPawn * deltatime*(result[0] - result[1]),0.f));
+	if (Input.Num() == 0)
+		return;
+	result=nn.forward(Input);
+	//GEngine->AddOnScreenDebugMessage(-1, deltatime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0]));
+	SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + RotationVelocityPawn * deltatime*(result[0]-result[1]), 0.f));
 }
