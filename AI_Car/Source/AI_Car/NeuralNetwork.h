@@ -28,7 +28,6 @@ public:
 	TArray<float> forward(TArray<float> data);
 
 	void Load(FString);
-	void Create(TArray<int> topology);
 
 	void Write(FString path);
 

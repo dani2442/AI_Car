@@ -61,12 +61,19 @@ void ACar::BeginPlay()
 void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (ActualVelocity<VelocityX) {
+		time += DeltaTime;
+		ActualVelocity = time * Aceleration;
+	}
+		
 
 	deltatime = DeltaTime;
 	UpdateStick();
 	UpdateRotation();
 	UpdateLocation();
-
+	UpdateCameraRotation();
+	UpdateStickRotation();
+	UpdateStickLength();
 	
 }
 
@@ -75,6 +82,11 @@ void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	InputComponent->BindAxis("CameraPitch", this, &ACar::Input_CameraPitch);
+	InputComponent->BindAxis("CameraYaw", this, &ACar::Input_CameraYaw);
+	InputComponent->BindAxis("StickPitch", this, &ACar::Input_StickPitch);
+	InputComponent->BindAxis("StickYaw", this, &ACar::Input_StickYaw);
+	InputComponent->BindAxis("Approach", this, &ACar::Input_Approach);
 }
 
 void ACar::OnCompHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
@@ -159,7 +171,7 @@ void ACar::UpdateStick()
 
 void ACar::UpdateLocation()
 {
-	SetActorLocation(GetActorForwardVector()* (deltatime*VelocityX) + GetActorLocation());
+	SetActorLocation(GetActorForwardVector()* (deltatime*ActualVelocity) + GetActorLocation());
 }
 
 void ACar::UpdateRotation()
@@ -170,3 +182,50 @@ void ACar::UpdateRotation()
 	//GEngine->AddOnScreenDebugMessage(-1, deltatime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0]));
 	SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + RotationVelocityPawn * deltatime*(result[0]-result[1]), 0.f));
 }
+
+void ACar::UpdateCameraRotation()
+{
+	FRotator CameraRotation = OurCamera->GetComponentRotation();
+	CameraRotation.Pitch += CameraInput.Y*camera_velocity;
+	CameraRotation.Yaw += CameraInput.X*camera_velocity;
+	OurCamera->SetWorldRotation(CameraRotation);
+}
+
+void ACar::UpdateStickRotation()
+{
+	FRotator StickRotation = OurCameraSpringArm->GetComponentRotation();
+	StickRotation.Pitch += StickInput.Y*stick_velocity;
+	StickRotation.Yaw += StickInput.X*stick_velocity;
+	OurCameraSpringArm->SetWorldRotation(StickRotation);
+}
+
+void ACar::UpdateStickLength()
+{
+	OurCameraSpringArm->TargetArmLength += approach_velocity*StickDistance;
+}
+
+void ACar::Input_Approach(float AxisValue)
+{
+	StickDistance = FMath::Clamp<float>(AxisValue,-1.0f,1.f);
+}
+
+void ACar::Input_CameraPitch(float AxisValue) 
+{
+	CameraInput.Y = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f);
+}
+
+void ACar::Input_CameraYaw(float AxisValue)
+{
+	CameraInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f);
+}
+
+void ACar::Input_StickYaw(float AxisValue)
+{
+	StickInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f);
+}
+
+void ACar::Input_StickPitch(float AxisValue)
+{
+	StickInput.Y = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f);
+}
+

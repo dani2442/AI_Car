@@ -4,6 +4,7 @@
 
 #include "Containers/Array.h"
 #include "NeuralNetwork.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Engine.h"
 #include "CollisionQueryParams.h"
 #include "DrawDebugHelpers.h"
@@ -36,6 +37,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
     USpringArmComponent* OurCameraSpringArm;
+
 	UPROPERTY(EditAnywhere)
     UCameraComponent* OurCamera;
 
@@ -58,10 +60,25 @@ public:
 		float VelocityX = 100.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
+		float ActualVelocity = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
+		float Aceleration = 300.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		float RotationVelocityPawn = 60.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		float MaxDistance = 2000.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "View")
+		float camera_velocity = 0.30f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "View")
+		float stick_velocity = 0.2f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "View")
+		float approach_velocity = 7.f;
 
 	FCollisionQueryParams CollisionParams;
 
@@ -95,9 +112,26 @@ private:
 	float NNproportion;
 
 	float deltatime;
+	float time = 0;
 
 	void UpdateStick();
 	void UpdateLocation();
 	void UpdateRotation();
+	void UpdateCameraRotation();
+	void UpdateStickRotation();
+	void UpdateStickLength();
+
+	FRotator CameraRotation;
+	FRotator StickRotation;
+
+	FVector2D CameraInput;
+	FVector2D StickInput;
+	float StickDistance;
+
+	void Input_Approach(float AxisValue);
+	void Input_CameraPitch(float AxisValue);
+	void Input_CameraYaw(float AxisValue);
+	void Input_StickYaw(float AxisValue);
+	void Input_StickPitch(float AxisValue);
 };
 

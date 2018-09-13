@@ -15,7 +15,7 @@ NeuralNetwork::NeuralNetwork(FString path)
 
 NeuralNetwork::NeuralNetwork(TArray<int> topology)
 {
-	Create(topology);
+	Init(topology);
 }
 
 NeuralNetwork::~NeuralNetwork()
@@ -60,7 +60,7 @@ void NeuralNetwork::Load(FString path)
 {
 	NN.Empty();
 	FString result;
-	FFileHelper::LoadFileToString(result,*path);
+	FFileHelper::LoadFileToString(result, *path);
 	FNN JsonData;
 
 	FJsonObjectConverter::JsonObjectStringToUStruct<FNN>(result, &JsonData, 0, 0);
@@ -77,21 +77,6 @@ void NeuralNetwork::Load(FString path)
 			nnlayer.Add(sublayer);
 		}
 		NN.Add(nnlayer);
-	}
-}
-
-void NeuralNetwork::Create(TArray<int> topology)
-{
-	for (int i = 0; i < topology.Num()-1; i++) {
-		TArray<TArray<float>> layer;
-		for (int j = 0; j < topology[i]; j++) {
-			TArray<float> sublayer;
-			for (int k = 0; k < topology[i + 1]; k++) {
-				sublayer.Add(FMath::FRand()*2-1);
-			}
-			layer.Add(sublayer);
-		}
-		NN.Add(layer);
 	}
 }
 

@@ -38,9 +38,11 @@ void AAI_Controller::BeginPlay()
 
 	importance_diversity2 = 1 / (importance_diversity + 1);
 	this->Initialize(); // Spawn objects
-	//Cars[0]->nn.Load(RelativePath+"NNdata/dani.json");
+	Cars[0]->nn.Load(RelativePath+"NNdata/dani.json");
 
 	OurPlayer = UGameplayStatics::GetPlayerController(this, 0);
+	OurPlayer->UnPossess();
+	OurPlayer->Possess(Cars[0]);
 	
 }
 
@@ -66,7 +68,7 @@ void AAI_Controller::Initialize(bool learn)
 {
 	FVector Location = GetActorLocation();
 	this->init_target = OurTrack->CalcNearestPoint(Location);
-	FRotator Rotation(0.f, 0.0f, 0.0f);
+	FRotator Rotation = GetActorRotation();
 	FTransform transform(Rotation, Location);
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.Owner = this;
@@ -143,9 +145,9 @@ void AAI_Controller::RefreshCarPosition()
 	for (int i = 0; i < Cars.Num(); i++) {
 		if (!Cars[i]->hit) {
 			OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);
-			//GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i, Cars[i]->lastTarget));
+			GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i, Cars[i]->lastTarget));
 			Cars[i]->percentage = OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
-			//GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
+			GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
 		}
 
 		// Draw line and show mesh only if the car is between the 6 firsts
@@ -164,10 +166,13 @@ void AAI_Controller::RefreshCarPosition()
 	CalcPosition();
 	if (last_best != position[count]) {
 		OurPlayer->SetViewTargetWithBlend(Cars[position[count]],1.0f);
-		Cars[position[count]]->OurCamera->Activate();
+		OurPlayer->UnPossess();
+		OurPlayer->Possess(Cars[position[count]]);
+		last_best = position[count];
+
+		//Cars[position[count]]->OurCamera->Activate();
 		//Cars[last_best]->StopPossessing();
 		//Cars[position[count]]->StartPossessing();
-		last_best = position[count];
 	}
 	
 }
@@ -231,14 +236,17 @@ void AAI_Controller::GeneticAlgorithm()
 void AAI_Controller::GA_Selection()
 {	
 	// Select the best
-	float last_best=0.f; int last_best_index;
-	for (int i = 0; i < Score.Num(); i++) {
-		if (Score[i] > last_best) {
-			last_best = Score[i];
-			last_best_index = i;
+	int k = 0;
+	for (int j =  1; j < population; j++) {
+		if (Cars[position[0]]->percentage < Cars[position[j]]->percentage) {
+			//GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("shown %i"), j));
+			k = position[0];
+			position[0] = position[j];
+			position[j] = k;
 		}
 	}
-	selections[0].NN = Cars[last_best_index]->nn.NN;
+	Cars[position[0]]->nn.Write(RelativePath+"NNdata/dani.json");
+	selections[0].NN = Cars[position[0]]->nn.NN;
 
 	float n;
 	for (int i = 1; i < selections.Num();i++) {
