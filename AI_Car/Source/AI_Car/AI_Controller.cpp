@@ -17,6 +17,11 @@ AAI_Controller::AAI_Controller()
 void AAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
+	OurPlayer = UGameplayStatics::GetPlayerController(this, 0);
+
+	if (show_cars > population) {
+		show_cars = population;
+	}
 
 	// Init Score of each population
 	this->Score.Init(0, population);
@@ -27,7 +32,7 @@ void AAI_Controller::BeginPlay()
 		selections.Add(NeuralNetwork());
 
 	// Init positions
-	for (int i = 0; i < population; i++)
+	for (int i = 0; i < population+player; i++)
 		position.Add(i);
 
 	// Init topology
@@ -38,12 +43,17 @@ void AAI_Controller::BeginPlay()
 
 	importance_diversity2 = 1 / (importance_diversity + 1);
 	this->Initialize(); // Spawn objects
-	Cars[0]->nn.Load(RelativePath+"NNdata/dani.json");
 
-	OurPlayer = UGameplayStatics::GetPlayerController(this, 0);
-	OurPlayer->UnPossess();
-	OurPlayer->Possess(Cars[0]);
-	
+	//Cars[0]->nn.Load(RelativePath + "NNdata/dani.json");
+
+	//if (view_assistant) {
+		//OurPlayer->UnPossess();
+		//OurPlayer->Possess(Cars[0]);
+	//}
+	//if (play) {
+		//OurPlayer->UnPossess();
+		//OurPlayer->Possess(PlayerCar);
+	//}
 }
 
 
@@ -56,10 +66,10 @@ void AAI_Controller::Tick(float DeltaTime)
 	sumDelta += DeltaTime;
 
 	if (sumDelta > refresh_frecuency) {
-	RefreshCarPosition();
+		RefreshCarPosition();
+		CheckHit();
 		sumDelta = 0;
 	}
-	CheckHit();
 	
 	
 }
@@ -73,29 +83,41 @@ void AAI_Controller::Initialize(bool learn)
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.Owner = this;
 	SpawnInfo.Instigator = Instigator;
-	int newobjects = Cars.Num();
+
 	
 	for (int i = 0; i < population; i++) {
-		Cars.Add(GetWorld()->SpawnActorDeferred<ACar>(OurSpawningObject,FTransform::Identity,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
+		Cars.Add(GetWorld()->SpawnActorDeferred<ACar>(OurSpawningObject, FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
+	}
+	if (player) {
+		Cars.Add(GetWorld()->SpawnActorDeferred<ACar>(OurSpawningObject, FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
+		Cars[population]->isPossessed = true;
+		OurPlayer->UnPossess();
+		OurPlayer->Possess(Cars[population]);
+		Cars[population]->lastTarget = init_target;
+		Cars[population]->InitNet(topology);
+		Cars[population]->OurVisibleActor->SetVisibility(true);
+		Cars[population]->FinishSpawning(transform);
 	}
 
 	for (int i = 0; i < population; i++) {
-		Cars[i]->lastTarget=init_target;
+		Cars[i]->lastTarget = init_target;
 		Cars[i]->InitNet(topology);
 		if (i >= show_cars) {
 			Cars[i]->OurVisibleActor->SetVisibility(false);
 		}
 		Cars[i]->FinishSpawning(transform);
 	}
+	
 	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("first number:%f"), best.NN[0][0][0]));
+
 }
 
 void AAI_Controller::ReInitialize()
 {
 	Probability();
 	GeneticAlgorithm();
-	for (int i = 0; i < population; i++) {
-		Cars[i]->ResetMovement(GetActorTransform(),init_target);
+	for (int i = 0; i < population+player; i++) {
+		Cars[i]->ResetMovement(GetActorTransform(), init_target);
 	}
 }
 
@@ -103,7 +125,8 @@ void AAI_Controller::Probability()
 {
 	CalcFitness();
 	CalcDiversity();
-
+	if (population == 0)
+		return;
 	Score[0] = (Cars[0]->fitness + Cars[0]->diversity);
 	for (int i = 1; i < Score.Num(); i++) {
 		Score[i] = Score[i - 1] + (Cars[i]->fitness +  Cars[i]->diversity);
@@ -113,6 +136,8 @@ void AAI_Controller::Probability()
 
 void AAI_Controller::CalcPosition()
 {
+	if (Cars.Num() == 0)
+		return;
 	int k;
 	for (int i = 0; i < show_cars; i++) {
 		for (int j = i + 1; j < population; j++) {
@@ -127,13 +152,26 @@ void AAI_Controller::CalcPosition()
 }
 
 void AAI_Controller::CheckHit() {
-	int Death=0;
-	for (int i = 0; i < Cars.Num() ; i++) {
+	int Death = 0;
+	int finished=0;
+	for (int i = 0; i < population+player; i++) {
 		if (Cars[i]->hit) {
 			Death++;
 		}
+		else {
+			if (Cars[i]->laps > this->laps) {
+				finished++;
+			}
+		}
 	}
-	if (Death == population) {
+	if (finished == population + (int)player - Death) {
+		ReInitialize();
+		GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("Winner: #%i"), position[0]));
+		GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("population: %i || death: %i || finished: %i"), population,Death,finished));
+		
+		// TODO winner and position
+	}
+	if (Death == population+player) {
 		ReInitialize();
 	}
 }
@@ -141,40 +179,45 @@ void AAI_Controller::CheckHit() {
 void AAI_Controller::RefreshCarPosition()
 {
 	int count=0;
-	
-	for (int i = 0; i < Cars.Num(); i++) {
+	for (int i = 0; i < population+player; i++) {
 		if (!Cars[i]->hit) {
-			OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);
+			if (OurTrack->UpdatePoint(Cars[i]->GetActorLocation(), Cars[i]->lastTarget)) {
+				Cars[i]->laps++;
+				if (Cars[i]->laps > this->laps)
+					this->laps++;
+			}
 			GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i, Cars[i]->lastTarget));
-			Cars[i]->percentage = OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
+			Cars[i]->percentage =Cars[i]->laps+ OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
 			GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
 		}
 
 		// Draw line and show mesh only if the car is between the 6 firsts
-		if (i<show_cars) {
-			Cars[position[i]]->OurVisibleActor->SetVisibility(true);
-			Cars[position[i]]->drawLine = true;
-			//GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("shown %i"), position[count]));
+		if(i!=population || player!=1){
+			if (i < show_cars) {
+				Cars[position[i]]->OurVisibleActor->SetVisibility(true);
+				Cars[position[i]]->drawLine = true;
+				//GEngine->AddOnScreenDebugMessage(-1, delta, FColor::Green, FString::Printf(TEXT("shown %i"), position[count]));
+			}
+			else {
+
+				Cars[position[i]]->drawLine = false;
+				Cars[position[i]]->OurVisibleActor->SetVisibility(false);
+			}
 		}
-		else {
-			
-			Cars[position[i]]->drawLine = false;
-			Cars[position[i]]->OurVisibleActor->SetVisibility(false);
-		}
-		
 	}
 	CalcPosition();
-	if (last_best != position[count]) {
-		OurPlayer->SetViewTargetWithBlend(Cars[position[count]],1.0f);
-		OurPlayer->UnPossess();
-		OurPlayer->Possess(Cars[position[count]]);
-		last_best = position[count];
+	if (!player) {
+		if (last_best != position[count]) {
+			OurPlayer->SetViewTargetWithBlend(Cars[position[count]], 0.4f);
+			//OurPlayer->UnPossess();
+			//OurPlayer->Possess(Cars[position[count]]);
+			last_best = position[count];
 
-		//Cars[position[count]]->OurCamera->Activate();
-		//Cars[last_best]->StopPossessing();
-		//Cars[position[count]]->StartPossessing();
+			//Cars[position[count]]->OurCamera->Activate();
+			//Cars[last_best]->StopPossessing();
+			//Cars[position[count]]->StartPossessing();
+		}
 	}
-	
 }
 
 void AAI_Controller::CalcDiversity()
@@ -234,7 +277,9 @@ void AAI_Controller::GeneticAlgorithm()
 }
 
 void AAI_Controller::GA_Selection()
-{	
+{
+	if (population == 0)
+		return;
 	// Select the best
 	int k = 0;
 	for (int j =  1; j < population; j++) {

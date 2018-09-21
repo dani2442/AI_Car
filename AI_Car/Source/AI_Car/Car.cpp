@@ -65,7 +65,16 @@ void ACar::Tick(float DeltaTime)
 		time += DeltaTime;
 		ActualVelocity = time * Aceleration;
 	}
+	actual = !actual;
 		
+	if (this->isPossessed) {
+		result[actual][0] = RotationPlayer*SmoothInput+(1.f-SmoothInput)*result[!actual][0];
+	}
+	else {
+		if (Input.Num() == 0)
+			return;
+		result[actual] = nn.forward(Input);
+	}
 
 	deltatime = DeltaTime;
 	UpdateStick();
@@ -75,6 +84,7 @@ void ACar::Tick(float DeltaTime)
 	UpdateStickRotation();
 	UpdateStickLength();
 	
+
 }
 
 // Called to bind functionality to input
@@ -85,7 +95,7 @@ void ACar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	InputComponent->BindAxis("CameraPitch", this, &ACar::Input_CameraPitch);
 	InputComponent->BindAxis("CameraYaw", this, &ACar::Input_CameraYaw);
 	InputComponent->BindAxis("StickPitch", this, &ACar::Input_StickPitch);
-	InputComponent->BindAxis("StickYaw", this, &ACar::Input_StickYaw);
+	InputComponent->BindAxis("Turn", this, &ACar::Input_StickYaw);
 	InputComponent->BindAxis("Approach", this, &ACar::Input_Approach);
 }
 
@@ -122,6 +132,9 @@ void ACar::Change() {
 
 void ACar::InitNet(TArray<int> topology)
 {
+
+	result[0].Init(0, topology.Last());
+	result[1].Init(0, topology.Last());
 	nn.Init(topology);
 	Input.Init(0, topology[0]);
 }
@@ -153,15 +166,17 @@ void ACar::UpdateStick()
 		bool isHit = GetWorld()->LineTraceSingleByObjectType(OutHit, start, end, ECC_WorldStatic, CollisionParams);
 		if (isHit && OutHit.bBlockingHit) {
 			if (GEngine) {
-				float distance = (OutHit.ImpactPoint - start).Size()*NNproportion;
+				float distance = (OutHit.ImpactPoint - start).Size();
 				Input[i]=distance;
 				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance));
 				//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Actor: %s"), *OutHit.GetActor()->GetName()));
 			}
 		}
 		else {
-			Input[i]=MaxDistance*NNproportion;
+			Input[i]=MaxDistance;
 		}
+		if (!isPossessed)
+			Input[i] *= NNproportion;
 		actorRot.Yaw += stickrotation;
 		//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("result: %f"),  Input[i]));
 	}
@@ -176,11 +191,9 @@ void ACar::UpdateLocation()
 
 void ACar::UpdateRotation()
 {
-	if (Input.Num() == 0)
-		return;
-	result=nn.forward(Input);
+	
 	//GEngine->AddOnScreenDebugMessage(-1, deltatime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0]));
-	SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + RotationVelocityPawn * deltatime*(result[0]-result[1]), 0.f));
+	SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + RotationVelocityPawn * deltatime*(result[actual][0]), 0.f));
 }
 
 void ACar::UpdateCameraRotation()
@@ -221,7 +234,7 @@ void ACar::Input_CameraYaw(float AxisValue)
 
 void ACar::Input_StickYaw(float AxisValue)
 {
-	StickInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f);
+	RotationPlayer = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f);
 }
 
 void ACar::Input_StickPitch(float AxisValue)

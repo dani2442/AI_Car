@@ -47,6 +47,9 @@ public:
 	UPROPERTY(EditAnywhere)
 		UBoxComponent* Component;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car",meta =(UIMin = "0.0", UIMax = "1.0"))
+		int SmoothInput = 0.4f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		int StickNumber = 4;
 
@@ -88,13 +91,17 @@ public:
 	NeuralNetwork nn;
 	bool hit = false;
 
+	bool isPossessed = false;
+
 	void ResetMovement(FTransform transform,int initTarget);
 	void Change();
 
 	int lastTarget=0;
 
 	float percentage;
-	int laps;
+
+	int laps=0;
+	float last_time_lap = 0;
 
 	float diversity = 0;
 	float fitness = 0;
@@ -107,7 +114,7 @@ public:
 	void StopPossessing();
 private:
 	TArray<float> Input;
-	TArray<float> result;
+	TArray<float> result[2];
 
 	float NNproportion;
 
@@ -123,6 +130,7 @@ private:
 
 	FRotator CameraRotation;
 	FRotator StickRotation;
+	float RotationPlayer;
 
 	FVector2D CameraInput;
 	FVector2D StickInput;
@@ -133,5 +141,7 @@ private:
 	void Input_CameraYaw(float AxisValue);
 	void Input_StickYaw(float AxisValue);
 	void Input_StickPitch(float AxisValue);
+
+	bool actual = false;
 };
 

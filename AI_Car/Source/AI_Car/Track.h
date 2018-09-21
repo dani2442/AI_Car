@@ -49,7 +49,7 @@ public:
 	void InitCircuitDistance();
 
 	int CalcNearestPoint(const FVector& actorloc);
-	void UpdatePoint(const FVector& actorloc,int &index);
+	bool UpdatePoint(const FVector& actorloc,int &index);
 
 	float CalcRectPosition(const FVector& actorloc,const int index);
 

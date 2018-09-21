@@ -19,6 +19,17 @@ class AI_CAR_API UJsonVariables : public UObject
 	
 };
 
+USTRUCT()
+struct FTrainingData {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+		TArray<float> input;
+
+	UPROPERTY()
+		TArray<float> output;
+};
+
 
 USTRUCT()
 struct FNNLayer

@@ -102,7 +102,7 @@ int ATrack::CalcNearestPoint(const FVector & actorloc)
 	return point;
 }
 
-void ATrack::UpdatePoint(const FVector & actorloc,int& index)
+bool ATrack::UpdatePoint(const FVector & actorloc,int& index)
 {
 	FVector target[2];
 	float distance2 = 10000000.f;
@@ -119,8 +119,13 @@ void ATrack::UpdatePoint(const FVector & actorloc,int& index)
 	}
 	
 	if (pow(actorloc.X - target[0].X, 2) + pow(actorloc.Y - target[0].Y, 2) > pow(actorloc.X - target[1].X, 2) + pow(actorloc.Y - target[1].Y, 2)) {
+		if (index - nextindex == n_target - 1) {
+			index = nextindex;
+			return true;
+		}
 		index = nextindex;
-	}	
+	}
+	return false;
 }
 // TODO laps completition consideration
 

@@ -8,6 +8,7 @@
 #include "Track.h"
 #include "NeuralNetwork.h"
 #include "Car.h"
+#include "JsonVariables.h"
 #include "Containers/Array.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -67,9 +68,12 @@ public:
 		TArray<int> HiddenLayer = { 3 }; // Topology of hidden layer
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Neural Network")
-		int OutputLayer= 2; // Number of outputs (fixed) turn right or left
+		int OutputLayer= 1; // Number of outputs (fixed) turn right or left
 
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "AI Controller")
+		bool player=true;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,Category = "AI Controller")
 		TSubclassOf<class ACar> OurSpawningObject;
@@ -82,6 +86,7 @@ public:
 	void Initialize(bool learn=false);
 	void ReInitialize();
 
+	ACar* PlayerCar;
 	TArray<ACar*> Cars;
 	TArray<float>Score;
 
@@ -93,6 +98,7 @@ public:
 
 	float refresh_frecuency=0.2;
 private:
+	TArray<FTrainingData> PlayerTrace;
 
 	float importance_diversity2;
 
@@ -106,6 +112,8 @@ private:
 	int init_target;
 	int current_target;
 
+	int laps = 0;
+	int maxLaps = 1;
 	void CheckHit();
 	void RefreshCarPosition();
 
