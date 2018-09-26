@@ -44,16 +44,13 @@ void AAI_Controller::BeginPlay()
 	importance_diversity2 = 1 / (importance_diversity + 1);
 	this->Initialize(); // Spawn objects
 
-	//Cars[0]->nn.Load(RelativePath + "NNdata/dani.json");
+	Cars[0]->nn=JSON_Handler::Load_NN(RelativePath + "NNdata/dani.json");
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("first number:%f"), Cars[0]->nn.NN[0][0][0]));
 
-	//if (view_assistant) {
-		//OurPlayer->UnPossess();
-		//OurPlayer->Possess(Cars[0]);
-	//}
-	//if (play) {
-		//OurPlayer->UnPossess();
-		//OurPlayer->Possess(PlayerCar);
-	//}
+	if (!player) {
+		OurPlayer->UnPossess();
+		OurPlayer->Possess(Cars[0]);
+	}
 }
 
 
@@ -68,6 +65,14 @@ void AAI_Controller::Tick(float DeltaTime)
 	if (sumDelta > refresh_frecuency) {
 		RefreshCarPosition();
 		CheckHit();
+		if (player) {
+			FTrainingData temp;
+			TArray<float> output{ Cars[population]->RotationPlayer };
+			TArray<float> input = Cars[population]->Input;
+			temp.input = input;
+			temp.output = output;
+			PlayerTrace.Add(temp);
+		}
 		sumDelta = 0;
 	}
 	
@@ -118,6 +123,9 @@ void AAI_Controller::ReInitialize()
 	GeneticAlgorithm();
 	for (int i = 0; i < population+player; i++) {
 		Cars[i]->ResetMovement(GetActorTransform(), init_target);
+	}
+	if (player) {
+		JSON_Handler::Write_Training(PlayerTrace, RelativePath + "NNdata/training.json");
 	}
 }
 
@@ -188,7 +196,7 @@ void AAI_Controller::RefreshCarPosition()
 			}
 			GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("Car #%i target: %i"), i, Cars[i]->lastTarget));
 			Cars[i]->percentage =Cars[i]->laps+ OurTrack->CalcRectPosition(Cars[i]->GetActorLocation(), Cars[i]->lastTarget);// last implementation
-			GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
+			//GEngine->AddOnScreenDebugMessage(-1, refresh_frecuency, FColor::Green, FString::Printf(TEXT("distance: %f / %f"), Cars[i]->percentage*OurTrack->TotalDistance, OurTrack->TotalDistance));
 		}
 
 		// Draw line and show mesh only if the car is between the 6 firsts
@@ -209,8 +217,8 @@ void AAI_Controller::RefreshCarPosition()
 	if (!player) {
 		if (last_best != position[count]) {
 			OurPlayer->SetViewTargetWithBlend(Cars[position[count]], 0.4f);
-			//OurPlayer->UnPossess();
-			//OurPlayer->Possess(Cars[position[count]]);
+			OurPlayer->UnPossess();
+			OurPlayer->Possess(Cars[position[count]]);
 			last_best = position[count];
 
 			//Cars[position[count]]->OurCamera->Activate();
@@ -271,9 +279,12 @@ void AAI_Controller::CalcFitness()
 
 void AAI_Controller::GeneticAlgorithm()
 {
+	if (selections.Num() == 0)
+		return;
 	GA_Selection();
 	GA_Crossover();
 	GA_Mutation();
+	UE_LOG(LogTemp,Warning,TEXT("first number:%f"),Cars[0]->nn.NN[0][0][0]);
 }
 
 void AAI_Controller::GA_Selection()
@@ -290,8 +301,16 @@ void AAI_Controller::GA_Selection()
 			position[j] = k;
 		}
 	}
-	Cars[position[0]]->nn.Write(RelativePath+"NNdata/dani.json");
-	selections[0].NN = Cars[position[0]]->nn.NN;
+	
+	if (position[0] == population) {
+		selections[0].NN = Cars[position[1]]->nn.NN;
+		UE_LOG(LogTemp,Warning,TEXT("car_selected__:%i"),position[1]);
+		JSON_Handler::Write_NN(Cars[position[1]]->nn, RelativePath + "NNdata/dani.json");
+	}else {
+		selections[0].NN = Cars[position[0]]->nn.NN;
+		UE_LOG(LogTemp,Warning,TEXT("car_selected:%i"),position[0]);
+		JSON_Handler::Write_NN(Cars[position[0]]->nn,RelativePath+"NNdata/dani.json");
+	}
 
 	float n;
 	for (int i = 1; i < selections.Num();i++) {

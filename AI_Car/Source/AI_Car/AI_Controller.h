@@ -7,6 +7,7 @@
 #include "Classes/Components/SplineComponent.h"
 #include "Track.h"
 #include "NeuralNetwork.h"
+#include "JSON_Handler.h"
 #include "Car.h"
 #include "JsonVariables.h"
 #include "Containers/Array.h"
@@ -86,7 +87,6 @@ public:
 	void Initialize(bool learn=false);
 	void ReInitialize();
 
-	ACar* PlayerCar;
 	TArray<ACar*> Cars;
 	TArray<float>Score;
 

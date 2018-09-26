@@ -10,7 +10,7 @@ NeuralNetwork::NeuralNetwork()
 
 NeuralNetwork::NeuralNetwork(FString path)
 {
-	Load(path);
+	//NN = JSON_Handler::Load_NN(path).NN;
 }
 
 NeuralNetwork::NeuralNetwork(TArray<int> topology)
@@ -53,63 +53,4 @@ TArray<float> NeuralNetwork::forward(TArray<float> data)
 		data = output;
 	}
 	return data;
-}
-
-void NeuralNetwork::Load(FString path)
-{
-	NN.Empty();
-	FString result;
-	FFileHelper::LoadFileToString(result, *path);
-	FNN JsonData;
-
-	FJsonObjectConverter::JsonObjectStringToUStruct<FNN>(result, &JsonData, 0, 0);
-	
-	//UE_LOG(LogTemp, Warning, TEXT("%s"), *result);
-
-	for (FNNLayer& layer : JsonData.NN) {
-		TArray<TArray<float>> nnlayer;
-		for (int i = 0; i < layer.n_neurons_pre; i++) {
-			TArray<float> sublayer;
-			for (int j = 0; j < layer.n_neurons_pos; j++) {
-				sublayer.Add(layer.weight[j + i * layer.n_neurons_pos]);
-			}
-			nnlayer.Add(sublayer);
-		}
-		NN.Add(nnlayer);
-	}
-}
-
-void NeuralNetwork::Write(FString path)
-{
-	
-	TSharedPtr<FJsonObject> SaveData = MakeShareable(new FJsonObject);
-
-	TArray< TSharedPtr<FJsonValue> > ObjArray;
-
-	for (auto& a : NN) {
-		TSharedPtr< FJsonObject > JsonObj = MakeShareable(new FJsonObject);
-		JsonObj->SetNumberField("n_neurons_pre",a.Num());
-		JsonObj->SetNumberField("n_neurons_pos",a[0].Num());
-
-		TArray< TSharedPtr<FJsonValue> > ValueArray;
-		for (auto&b : a) {
-			for (auto&c : b) {
-				TSharedPtr<FJsonValue> Value1 = MakeShareable(new FJsonValueNumber(c));  
-				ValueArray.Add(Value1); 
-			}
-		}
-		JsonObj->SetArrayField("weight",ValueArray);
-		TSharedRef< FJsonValueObject > JsonValue = MakeShareable( new FJsonValueObject( JsonObj) );
-		ObjArray.Add(JsonValue);
-	}
-
-	SaveData->SetArrayField("NN", ObjArray);
-
-
-	FString SaveGameStringData;
-
-	TSharedRef< TJsonWriter<> > JsonWriter = TJsonWriterFactory<>::Create(&SaveGameStringData);
-	FJsonSerializer::Serialize(SaveData.ToSharedRef(), JsonWriter);
-
-	FFileHelper::SaveStringToFile(*SaveGameStringData, *path);
 }

@@ -61,22 +61,21 @@ void ACar::BeginPlay()
 void ACar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	deltatime = DeltaTime;
+
 	if (ActualVelocity<VelocityX) {
 		time += DeltaTime;
 		ActualVelocity = time * Aceleration;
 	}
-	actual = !actual;
 		
 	if (this->isPossessed) {
-		result[actual][0] = RotationPlayer*SmoothInput+(1.f-SmoothInput)*result[!actual][0];
+		result[0] = RotationPlayer;// *SmoothInput + (1.f - SmoothInput)*result[!actual][0];
 	}
 	else {
-		if (Input.Num() == 0)
-			return;
-		result[actual] = nn.forward(Input);
+		result = nn.forward(Input);
 	}
 
-	deltatime = DeltaTime;
+	
 	UpdateStick();
 	UpdateRotation();
 	UpdateLocation();
@@ -133,8 +132,7 @@ void ACar::Change() {
 void ACar::InitNet(TArray<int> topology)
 {
 
-	result[0].Init(0, topology.Last());
-	result[1].Init(0, topology.Last());
+	result.Init(0, topology.Last());
 	nn.Init(topology);
 	Input.Init(0, topology[0]);
 }
@@ -193,7 +191,7 @@ void ACar::UpdateRotation()
 {
 	
 	//GEngine->AddOnScreenDebugMessage(-1, deltatime, FColor::Blue, FString::Printf(TEXT("rotation: %f"), result[0]));
-	SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + RotationVelocityPawn * deltatime*(result[actual][0]), 0.f));
+	SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + RotationVelocityPawn * deltatime*(result[0]), 0.f));
 }
 
 void ACar::UpdateCameraRotation()

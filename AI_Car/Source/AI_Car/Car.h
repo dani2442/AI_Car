@@ -4,6 +4,7 @@
 
 #include "Containers/Array.h"
 #include "NeuralNetwork.h"
+#include "JsonVariables.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine.h"
 #include "CollisionQueryParams.h"
@@ -48,7 +49,7 @@ public:
 		UBoxComponent* Component;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car",meta =(UIMin = "0.0", UIMax = "1.0"))
-		int SmoothInput = 0.4f;
+		float SmoothInput = 0.2f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Car")
 		int StickNumber = 4;
@@ -112,9 +113,13 @@ public:
 
 	void StartPossessing();
 	void StopPossessing();
-private:
+
+	float RotationPlayer;
+
 	TArray<float> Input;
-	TArray<float> result[2];
+private:
+	
+	TArray<float> result;
 
 	float NNproportion;
 
@@ -130,7 +135,7 @@ private:
 
 	FRotator CameraRotation;
 	FRotator StickRotation;
-	float RotationPlayer;
+	
 
 	FVector2D CameraInput;
 	FVector2D StickInput;
@@ -141,7 +146,5 @@ private:
 	void Input_CameraYaw(float AxisValue);
 	void Input_StickYaw(float AxisValue);
 	void Input_StickPitch(float AxisValue);
-
-	bool actual = false;
 };
 

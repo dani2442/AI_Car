@@ -14,10 +14,19 @@ class AI_CAR_API UJsonVariables : public UObject
 {
 	GENERATED_BODY()
 	
-	
+public:
 	
 	
 };
+USTRUCT()
+struct FCarInput {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	float RotationPlayer;
+
+};
+
 
 USTRUCT()
 struct FTrainingData {

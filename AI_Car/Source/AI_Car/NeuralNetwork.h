@@ -27,10 +27,6 @@ public:
 
 	TArray<float> forward(TArray<float> data);
 
-	void Load(FString);
-
-	void Write(FString path);
-
 	TArray<TArray<TArray<float>>> NN;
 
 private:
